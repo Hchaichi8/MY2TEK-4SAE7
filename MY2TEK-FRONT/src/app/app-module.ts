@@ -16,10 +16,12 @@ import {
   SocialAuthServiceConfig,
   GoogleLoginProvider,
   GoogleSigninButtonDirective,
-  SOCIAL_AUTH_CONFIG, 
+  SOCIAL_AUTH_CONFIG,
 } from '@abacritt/angularx-social-login';
 import { Dashboard } from './Ms-User/Admin/dashboard/dashboard';
 import { Useradmin } from './Ms-User/Admin/useradmin/useradmin';
+import { HomePage } from './Ms-Review/home-page/home-page';
+import { DetailProductPage } from './Ms-Review/detail-product-page/detail-product-page';
 
 @NgModule({
   declarations: [
@@ -31,6 +33,8 @@ import { Useradmin } from './Ms-User/Admin/useradmin/useradmin';
     ResetPassword,
     Dashboard,
     Useradmin,
+    HomePage,
+    DetailProductPage,
   ],
   imports: [
     BrowserModule,
@@ -42,7 +46,7 @@ import { Useradmin } from './Ms-User/Admin/useradmin/useradmin';
   ],
   providers: [
     {
-      provide: SOCIAL_AUTH_CONFIG, 
+      provide: SOCIAL_AUTH_CONFIG,
       useValue: {
         autoLogin: false,
         providers: [

@@ -7,6 +7,8 @@ import { ForgotPassword } from './Ms-User/forgot-password/forgot-password';
 import { ResetPassword } from './Ms-User/reset-password/reset-password';
 import { Useradmin } from './Ms-User/Admin/useradmin/useradmin';
 import { Dashboard } from './Ms-User/Admin/dashboard/dashboard';
+import { DetailProductPage } from './Ms-Review/detail-product-page/detail-product-page';
+import { HomePage } from './Ms-Review/home-page/home-page';
 
 const routes: Routes = [
 
@@ -16,6 +18,10 @@ const routes: Routes = [
   { path: 'Profil', component: Profil },
   { path: 'forgot-password', component: ForgotPassword },
   { path: 'reset-password', component: ResetPassword },
+  { path: 'detail-product', component: DetailProductPage },
+  { path: 'home', component: HomePage },
+  
+
 
 
   { path: 'user-admin', component: Useradmin },
