@@ -1,0 +1,36 @@
+<div class="form-container">
+  <h2>Nouvelle Commande</h2>
+
+  <div *ngIf="successMessage" class="alert alert-success">{{ successMessage }}</div>
+  <div *ngIf="errorMessage" class="alert alert-error">{{ errorMessage }}</div>
+
+  <form (ngSubmit)="onSubmit()" #commandeForm="ngForm">
+    <div class="form-group">
+      <label for="clientId">ID Client</label>
+      <input id="clientId" type="text" [(ngModel)]="commande.clientId"
+             name="clientId" required placeholder="ex: user-123" />
+    </div>
+
+    <div class="form-group">
+      <label for="produitId">ID Produit</label>
+      <input id="produitId" type="text" [(ngModel)]="commande.produitId"
+             name="produitId" required placeholder="ex: prod-456" />
+    </div>
+
+    <div class="form-group">
+      <label for="quantite">Quantité</label>
+      <input id="quantite" type="number" [(ngModel)]="commande.quantite"
+             name="quantite" required min="1" />
+    </div>
+
+    <div class="form-group">
+      <label for="prix">Prix (TND)</label>
+      <input id="prix" type="number" [(ngModel)]="commande.prixSnapshot"
+             name="prixSnapshot" required min="0" step="0.01" />
+    </div>
+
+    <button type="submit" [disabled]="commandeForm.invalid || isLoading" class="btn-submit">
+      {{ isLoading ? 'Création...' : 'Créer la commande' }}
+    </button>
+  </form>
+</div>

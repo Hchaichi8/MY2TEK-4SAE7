@@ -1,0 +1,204 @@
+<div class="admin-layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">MY2<span>TEK</span></div>
+    <p class="sidebar-tag">Console Admin</p>
+    <nav class="sidebar-nav">
+      <a class="nav-item" routerLink="/dashboard-admin"><i class="fa-solid fa-chart-line"></i> Dashboard</a>
+      <a class="nav-item" routerLink="/user-admin"><i class="fa-solid fa-users-cog"></i> Utilisateurs</a>
+      <a class="nav-item"><i class="fa-solid fa-laptop-code"></i> Produits</a>
+      <a class="nav-item active"><i class="fa-solid fa-receipt"></i> Commandes</a>
+    </nav>
+    <button class="btn-logout" (click)="onLogout()"><i class="fa-solid fa-power-off"></i> Déconnexion</button>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+    <header class="topbar">
+      <div>
+        <h2>Gestion des Commandes</h2>
+        <p>{{ filtered.length }} commande{{ filtered.length > 1 ? 's' : '' }} au total</p>
+      </div>
+      <button class="btn-refresh" (click)="load()"><i class="fa-solid fa-rotate-right"></i> Actualiser</button>
+    </header>
+
+    <div class="content">
+
+      <!-- STATS -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon purple"><i class="fa-solid fa-wallet"></i></div>
+          <div><span class="stat-val">{{ stats.revenu | number:'1.0-0' }} TND</span><span class="stat-lbl">Revenu total</span></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon blue"><i class="fa-solid fa-receipt"></i></div>
+          <div><span class="stat-val">{{ stats.total }}</span><span class="stat-lbl">Commandes</span></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon orange"><i class="fa-solid fa-clock"></i></div>
+          <div><span class="stat-val">{{ stats.created }}</span><span class="stat-lbl">En attente</span></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon teal"><i class="fa-solid fa-truck"></i></div>
+          <div><span class="stat-val">{{ stats.shipped }}</span><span class="stat-lbl">Expédiées</span></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon green"><i class="fa-solid fa-box-open"></i></div>
+          <div><span class="stat-val">{{ stats.delivered }}</span><span class="stat-lbl">Livrées</span></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon red"><i class="fa-solid fa-ban"></i></div>
+          <div><span class="stat-val">{{ stats.cancelled }}</span><span class="stat-lbl">Annulées</span></div>
+        </div>
+      </div>
+
+      <!-- ALERTS -->
+      <div class="alert-success" *ngIf="successMsg"><i class="fa-solid fa-check-circle"></i> {{ successMsg }}</div>
+      <div class="alert-error" *ngIf="errorMsg"><i class="fa-solid fa-exclamation-circle"></i> {{ errorMsg }}</div>
+
+      <!-- FILTERS -->
+      <div class="filters-bar">
+        <div class="search-wrap">
+          <i class="fa-solid fa-search"></i>
+          <input type="text" placeholder="Rechercher par client, produit ou ID..."
+                 [(ngModel)]="searchTerm" (input)="applyFilters()">
+        </div>
+        <div class="filter-tabs">
+          <button class="ftab" [class.active]="filterStatut === ''" (click)="filterStatut=''; applyFilters()">Toutes</button>
+          <button class="ftab" [class.active]="filterStatut === 'CREATED'" (click)="filterStatut='CREATED'; applyFilters()">
+            <span class="dot orange"></span>En attente
+          </button>
+          <button class="ftab" [class.active]="filterStatut === 'VALIDATED'" (click)="filterStatut='VALIDATED'; applyFilters()">
+            <span class="dot green"></span>Validées
+          </button>
+          <button class="ftab" [class.active]="filterStatut === 'SHIPPED'" (click)="filterStatut='SHIPPED'; applyFilters()">
+            <span class="dot teal"></span>Expédiées
+          </button>
+          <button class="ftab" [class.active]="filterStatut === 'DELIVERED'" (click)="filterStatut='DELIVERED'; applyFilters()">
+            <span class="dot blue"></span>Livrées
+          </button>
+          <button class="ftab" [class.active]="filterStatut === 'CANCELLED'" (click)="filterStatut='CANCELLED'; applyFilters()">
+            <span class="dot red"></span>Annulées
+          </button>
+        </div>
+      </div>
+
+      <!-- LOADING -->
+      <div class="loading-row" *ngIf="loading">
+        <div class="spinner"></div><span>Chargement...</span>
+      </div>
+
+      <!-- GRID COMMANDES -->
+      <div class="orders-grid" *ngIf="!loading && filtered.length > 0">
+        <div class="order-card" *ngFor="let c of filtered">
+
+          <!-- IMAGE -->
+          <div class="card-img-wrap">
+            <img [src]="getProductImage(c.produitId)" [alt]="c.produitId" class="card-img">
+            <span class="card-id">#{{ c.id }}</span>
+            <span class="card-badge badge-{{ (c.statut || '') | lowercase }}">
+              {{ statutLabels[c.statut || ''] || c.statut }}
+            </span>
+          </div>
+
+          <!-- BODY -->
+          <div class="card-body">
+            <div class="card-cat">{{ getProductCategory(c.produitId) }}</div>
+            <h3 class="card-name">{{ getProductName(c.produitId) }}</h3>
+            <div class="card-ref">Réf: {{ c.produitId }}</div>
+
+            <div class="card-client">
+              <div class="client-avatar">{{ c.clientId.charAt(0).toUpperCase() }}</div>
+              <span class="client-email">{{ c.clientId }}</span>
+            </div>
+
+            <div class="card-numbers">
+              <div class="num-item">
+                <span class="num-lbl">Quantité</span>
+                <span class="num-val">{{ c.quantite }}</span>
+              </div>
+              <div class="num-item">
+                <span class="num-lbl">Prix unit.</span>
+                <span class="num-val">{{ c.prixSnapshot | number:'1.2-2' }} TND</span>
+              </div>
+              <div class="num-item">
+                <span class="num-lbl">Total</span>
+                <span class="num-val accent">{{ (c.prixSnapshot * c.quantite) | number:'1.2-2' }} TND</span>
+              </div>
+              <div class="num-item">
+                <span class="num-lbl">Date</span>
+                <span class="num-val">{{ c.createdAt | date:'dd/MM/yy' }}</span>
+              </div>
+            </div>
+
+            <!-- STATUT SELECT -->
+            <div class="statut-row">
+              <label>Statut</label>
+              <select class="statut-sel statut-sel-{{ (c.statut || '') | lowercase }}"
+                      [value]="c.statut"
+                      (change)="onStatutChange(c.id, $any($event.target).value)">
+                <option *ngFor="let s of statuts" [value]="s">{{ statutLabels[s] }}</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- FOOTER -->
+          <div class="card-footer">
+            <button class="btn-edit" (click)="openDetail(c)">
+              <i class="fa-solid fa-pen"></i> Modifier
+            </button>
+            <button class="btn-del"
+                    (click)="annuler(c.id)"
+                    [disabled]="c.statut === 'CANCELLED' || c.statut === 'DELIVERED'">
+              <i class="fa-solid fa-ban"></i> Annuler
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- EMPTY -->
+      <div class="empty-state" *ngIf="!loading && filtered.length === 0">
+        <i class="fa-solid fa-inbox"></i>
+        <p>Aucune commande trouvée.</p>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<!-- MODAL EDIT -->
+<div class="modal-overlay" *ngIf="selectedCommande" (click)="closeDetail()">
+  <div class="modal-box" (click)="$event.stopPropagation()">
+    <div class="modal-head">
+      <div class="modal-title-wrap">
+        <img [src]="getProductImage(selectedCommande.produitId)" class="modal-img">
+        <div>
+          <h3>{{ getProductName(selectedCommande.produitId) }}</h3>
+          <span class="modal-sub">Commande #{{ selectedCommande.id }} · {{ selectedCommande.clientId }}</span>
+        </div>
+      </div>
+      <button class="close-btn" (click)="closeDetail()"><i class="fa-solid fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-detail-grid">
+        <div class="md-item"><label>Client</label><span>{{ selectedCommande.clientId }}</span></div>
+        <div class="md-item"><label>Produit</label><span>{{ selectedCommande.produitId }}</span></div>
+        <div class="md-item"><label>Quantité</label><span>{{ selectedCommande.quantite }}</span></div>
+        <div class="md-item"><label>Prix unitaire</label><span>{{ selectedCommande.prixSnapshot | number:'1.2-2' }} TND</span></div>
+        <div class="md-item"><label>Total</label><span class="price-big">{{ (selectedCommande.prixSnapshot * selectedCommande.quantite) | number:'1.2-2' }} TND</span></div>
+        <div class="md-item"><label>Date</label><span>{{ selectedCommande.createdAt | date:'dd/MM/yyyy' }}</span></div>
+      </div>
+      <div class="form-group-modal">
+        <label>Changer le statut</label>
+        <select [(ngModel)]="editStatut" class="statut-input">
+          <option *ngFor="let s of statuts" [value]="s">{{ statutLabels[s] }}</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel-m" (click)="closeDetail()">Annuler</button>
+      <button class="btn-save-m" (click)="saveStatut()"><i class="fa-solid fa-check"></i> Enregistrer</button>
+    </div>
+  </div>
+</div>

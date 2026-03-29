@@ -1,0 +1,48 @@
+<div class="commandes-container">
+  <h2>Gestion des Commandes</h2>
+
+  <div *ngIf="successMessage" class="alert alert-success">{{ successMessage }}</div>
+  <div *ngIf="errorMessage" class="alert alert-error">{{ errorMessage }}</div>
+
+  <table class="commandes-table" *ngIf="commandes.length > 0; else noData">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Client</th>
+        <th>Produit</th>
+        <th>Quantité</th>
+        <th>Prix</th>
+        <th>Statut</th>
+        <th>Date</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let commande of commandes">
+        <td>{{ commande.id }}</td>
+        <td>{{ commande.clientId }}</td>
+        <td>{{ commande.produitId }}</td>
+        <td>{{ commande.quantite }}</td>
+        <td>{{ commande.prixSnapshot | currency:'TND' }}</td>
+        <td>
+          <span class="badge badge-{{ (commande.statut || '') | lowercase }}">{{ commande.statut }}</span>
+        </td>
+        <td>{{ commande.createdAt | date:'dd/MM/yyyy' }}</td>
+        <td class="actions">
+          <select (change)="updateStatut(commande.id!, $any($event.target).value)">
+            <option value="">Changer statut</option>
+            <option *ngFor="let s of statuts" [value]="s">{{ s }}</option>
+          </select>
+          <button class="btn-cancel" (click)="annuler(commande.id!)"
+                  [disabled]="commande.statut === 'CANCELLED'">
+            Annuler
+          </button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <ng-template #noData>
+    <p class="no-data">Aucune commande trouvée.</p>
+  </ng-template>
+</div>
