@@ -16,21 +16,15 @@ public class ApigetwayApplication {
     }
 
     @Bean
-    public RouteLocator gatewayroute(RouteLocatorBuilder builder){
+    public RouteLocator gatewayroute(RouteLocatorBuilder builder) {
         return builder.routes()
-                .route("idroute1project", r -> r.path("/Project/**")
-                        .uri("lb://PROJECTMICROSERVICE"))
                 .route("idroute1user", r -> r.path("/users/**")
+                        .filters(f -> f
+                                .stripPrefix(0)
+                                .dedupeResponseHeader("Access-Control-Allow-Origin", "RETAIN_UNIQUE")
+                                .dedupeResponseHeader("Access-Control-Allow-Credentials", "RETAIN_UNIQUE")
+                        )
                         .uri("lb://USERMICROSERVICE"))
-                .route("idroute1contract", r -> r.path("/Contract/**")
-                        .uri("lb://PROJECTMICROSERVICE"))
-
-                .route("idroute1CompetanceETreview", r -> r.path("/Competance/**")
-                        .uri("lb://MSCOMPETENCEANDREVIEW"))
-
-                .route("idroute2CompetanceETreview", r -> r.path("/Review/**")
-                        .uri("lb://MSCOMPETENCEANDREVIEW"))
                 .build();
     }
-
 }

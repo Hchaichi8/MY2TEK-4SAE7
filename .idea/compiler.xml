@@ -3,6 +3,15 @@
   <component name="CompilerConfiguration">
     <annotationProcessing>
       <profile default="true" name="Default" enabled="true" />
+      <profile name="Maven default annotation processors profile" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <module name="config-server" />
+        <module name="apigetway" />
+        <module name="eureka" />
+        <module name="UserMicroService" />
+      </profile>
       <profile name="Annotation profile for MS_CompetenceAndReview" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
@@ -11,14 +20,6 @@
           <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/unknown/lombok-unknown.jar" />
         </processorPath>
         <module name="MS_CompetenceAndReview" />
-        <module name="UserMicroService" />
-      </profile>
-      <profile name="Maven default annotation processors profile" enabled="true">
-        <sourceOutputDir name="target/generated-sources/annotations" />
-        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
-        <outputRelativeToContentRoot value="true" />
-        <module name="eureka" />
-        <module name="apigetway" />
       </profile>
     </annotationProcessing>
   </component>
@@ -27,6 +28,7 @@
       <module name="MS_CompetenceAndReview" options="-parameters" />
       <module name="UserMicroService" options="-parameters" />
       <module name="apigetway" options="-parameters" />
+      <module name="config-server" options="-parameters" />
       <module name="eureka" options="-parameters" />
     </option>
   </component>
