@@ -12,31 +12,52 @@
         <i class="fa-solid fa-cart-shopping"></i>
         <span class="cart-badge">0</span>
       </div>
-      <div class="user-pill" routerLink="/profil">Mon Profil</div>
+
+      <!-- ✅ Loading state — show nothing while Keycloak checks -->
+      <div *ngIf="isLoggedIn === null" class="nav-skeleton"></div>
+
+      <!-- Guest -->
+      <div *ngIf="isLoggedIn === false" class="user-pill" routerLink="/login">
+        Connexion
+      </div>
+
+      <!-- Logged in -->
+      <div *ngIf="isLoggedIn === true" class="user-menu">
+        <div class="user-pill-logged" routerLink="/Profil">
+          <div class="user-avatar-nav">{{ userInitials }}</div>
+          <span class="user-name">{{ userData?.firstName || userData?.username }}</span>
+        </div>
+      </div>
     </div>
   </nav>
 
   <div class="detail-container">
     <div class="product-main-grid">
-      
+
       <div class="product-gallery">
         <div class="main-image-card">
           <span class="stock-badge">En Stock</span>
           <img src="https://files.pccasegear.com/images/1665464763-ROG-STRIX-RTX4090-O24G-GAMING-thb2.jpg" alt="RTX 4090">
         </div>
         <div class="thumbnail-list">
-          <div class="thumb active"><img src="https://dlcdnwebimgs.asus.com/gain/77332454-947B-4F8A-8515-51E918E84E43/with_fpro/w1000/h600"></div>
-          <div class="thumb"><img src="https://dlcdnwebimgs.asus.com/gain/2740A395-B357-4C75-8D63-B8B9B1E627B5/w717/h525"></div>
+          <div class="thumb active">
+            <img src="https://dlcdnwebimgs.asus.com/gain/77332454-947B-4F8A-8515-51E918E84E43/with_fpro/w1000/h600">
+          </div>
+          <div class="thumb">
+            <img src="https://dlcdnwebimgs.asus.com/gain/2740A395-B357-4C75-8D63-B8B9B1E627B5/w717/h525">
+          </div>
         </div>
       </div>
 
       <div class="product-info-panel">
         <nav class="breadcrumb">Accueil > Composants > Cartes Graphiques</nav>
         <h1 class="product-title">NVIDIA GeForce RTX 4090 Strix Edition</h1>
-        
+
         <div class="quick-meta">
           <div class="stars">
-            <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+            <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+            <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+            <i class="fa-solid fa-star"></i>
             <span>(128 avis)</span>
           </div>
           <span class="sku">REF: MY2-RTX4090</span>
@@ -49,7 +70,8 @@
         </div>
 
         <p class="product-short-desc">
-          La carte graphique ultime pour les gamers et créateurs. Architecture NVIDIA Ada Lovelace, 24 Go de mémoire G6X, et refroidissement Strix optimisé.
+          La carte graphique ultime pour les gamers et créateurs. Architecture NVIDIA Ada Lovelace,
+          24 Go de mémoire G6X, et refroidissement Strix optimisé.
         </p>
 
         <div class="purchase-zone">
@@ -78,44 +100,77 @@
           <h2>Avis des Clients</h2>
           <p>Ce que nos utilisateurs pensent de ce produit.</p>
         </div>
-        <button class="btn-write" (click)="toggleReviewForm()">
-          <i class="fa-solid" [class.fa-pen-to-square]="!showForm" [class.fa-xmark]="showForm"></i>
-          {{ showForm ? 'Annuler' : 'Laisser un avis' }}
+
+        <!-- ✅ Hide button while loading -->
+        <button *ngIf="isLoggedIn !== null" class="btn-write" (click)="toggleReviewForm()">
+          <i class="fa-solid"
+             [class.fa-pen-to-square]="!showForm && isLoggedIn"
+             [class.fa-xmark]="showForm"
+             [class.fa-lock]="!isLoggedIn"></i>
+          {{ showForm ? 'Annuler' : isLoggedIn ? 'Laisser un avis' : 'Connectez-vous pour écrire' }}
         </button>
       </div>
 
-      <div class="review-form-card" *ngIf="showForm">
+      <!-- ✅ Author info banner above form -->
+      <div *ngIf="showForm && isLoggedIn" class="review-author-info">
+        <div class="author-avatar">{{ userInitials }}</div>
+        <div>
+          <span class="author-name">{{ userDisplayName }}</span>
+          <span class="author-label">Vous publiez en tant que client vérifié</span>
+        </div>
+      </div>
+
+      <!-- ✅ Form only shown when showForm AND logged in AND not submitting -->
+      <div class="review-form-card" *ngIf="showForm && isLoggedIn">
         <h3>Partagez votre expérience</h3>
+
         <div class="rating-input">
           <div class="stars-picker">
-            <i *ngFor="let star of [1,2,3,4,5]" 
-               class="fa-star" 
-               [class.fa-solid]="newReview.rating >= star" 
+            <i *ngFor="let star of [1,2,3,4,5]"
+               class="fa-star"
+               [class.fa-solid]="newReview.rating >= star"
                [class.fa-regular]="newReview.rating < star"
-               (click)="newReview.rating = star"></i>
+               (click)="newReview.rating = star"
+               style="cursor:pointer; font-size: 24px; color: #f59e0b;"></i>
           </div>
         </div>
 
         <div class="textarea-wrapper">
-          <textarea [(ngModel)]="newReview.description" placeholder="Votre avis nous intéresse..."></textarea>
+          <textarea
+            [(ngModel)]="newReview.description"
+            placeholder="Votre avis nous intéresse..."
+            rows="4">
+          </textarea>
           <button class="btn-ai" (click)="enhanceWithAI()" [disabled]="isEnhancing">
-            <i class="fa-solid fa-wand-magic-sparkles"></i> 
-            {{ isEnhancing ? 'IA en cours...' : 'Améliorer avec l\'IA' }}
+            <i class="fa-solid fa-wand-magic-sparkles"></i>
+            {{ isEnhancing ? 'IA en cours...' : "Améliorer avec l'IA" }}
           </button>
         </div>
-        
-        <button class="btn-submit" (click)="submitReview()">Publier l'avis</button>
+
+        <!-- ✅ isSubmitting disables button to prevent double click -->
+        <button class="btn-submit" (click)="submitReview()" [disabled]="isSubmitting">
+          <span *ngIf="!isSubmitting">Publier l'avis</span>
+          <span *ngIf="isSubmitting">Publication...</span>
+        </button>
       </div>
 
       <div class="reviews-list">
         <div class="review-item" *ngFor="let r of reviews">
           <div class="review-card-inner">
-            <div class="user-avatar">{{ r.clientId?.charAt(0) || 'U' }}</div>
+            <!-- ✅ Show first letter of clientName if available -->
+            <div class="user-avatar">
+              {{ (r.clientName || r.clientId)?.charAt(0)?.toUpperCase() || 'U' }}
+            </div>
             <div class="review-body">
               <div class="review-meta">
                 <div class="user-info">
-                  <span class="username">Client #{{ r.clientId }}</span>
-                  <span class="verified"><i class="fa-solid fa-circle-check"></i> Achat vérifié</span>
+                  <!-- ✅ Show real name instead of raw ID -->
+                  <span class="username">
+                    {{ r.clientName || ('Client #' + r.clientId) }}
+                  </span>
+                  <span class="verified">
+                    <i class="fa-solid fa-circle-check"></i> Achat vérifié
+                  </span>
                 </div>
                 <span class="date">{{ r.createdAt | date:'dd MMM yyyy' }}</span>
               </div>
@@ -127,9 +182,10 @@
             </div>
           </div>
         </div>
-        
+
         <div *ngIf="reviews.length === 0" class="no-reviews">
-          Aucun avis pour le moment. Soyez le premier !
+          <i class="fa-regular fa-comment-dots" style="font-size: 32px; opacity: 0.3;"></i>
+          <p>Aucun avis pour le moment. Soyez le premier !</p>
         </div>
       </div>
     </section>

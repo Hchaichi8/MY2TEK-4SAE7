@@ -59,10 +59,34 @@ public class ReviewServiceImpl implements ReviewService {
 
         String url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=" + apiKey;
 
-        String prompt = "Professionalize this freelancer review. " +
-                "Rating: " + rating + "/5 stars. " +
-                "Original draft: '" + originalText + "'. " +
-                "Instructions: Rewrite it to be polite, clear, and professional. Return ONLY the rewritten text.";
+        String ratingContext;
+        if (rating >= 5) {
+            ratingContext = "very satisfied customer (5/5 stars)";
+        } else if (rating == 4) {
+            ratingContext = "satisfied customer (4/5 stars)";
+        } else if (rating == 3) {
+            ratingContext = "neutral customer (3/5 stars)";
+        } else if (rating == 2) {
+            ratingContext = "dissatisfied customer (2/5 stars)";
+        } else {
+            ratingContext = "very dissatisfied customer (1/5 stars)";
+        }
+
+        String prompt = "You are a review assistant for MY2TEK, a Tunisian e-commerce website " +
+                "specializing in high-tech products: gaming PCs, GPUs, CPUs, RAM, storage, " +
+                "peripherals and accessories.\n\n" +
+                "A " + ratingContext + " wrote this product review draft:\n" +
+                "\"" + originalText + "\"\n\n" +
+                "Your task:\n" +
+                "- Rewrite it to sound like a natural, authentic customer review\n" +
+                "- Keep the same sentiment and opinion as the original\n" +
+                "- Make it clear, specific, and helpful for other buyers\n" +
+                "- Keep technical terms if the original mentions them (GPU, FPS, MHz, etc.)\n" +
+                "- Write in the same language as the original (French or English)\n" +
+                "- Do NOT add fake details the customer didn't mention\n" +
+                "- Do NOT use overly marketing language\n" +
+                "- Return ONLY the rewritten review text, nothing else\n" +
+                "- Keep it between 2-4 sentences maximum";
 
         Map<String, Object> textPart = new HashMap<>();
         textPart.put("text", prompt);

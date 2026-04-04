@@ -1,47 +1,21 @@
-package org.example.usermicroservice.Entities;
-
-import jakarta.persistence.*;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
+package org.example.usermicroservice.DTO;
 import lombok.*;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+import org.example.usermicroservice.Entities.Role;
 import java.time.LocalDateTime;
 
-@Entity
-@Table(name = "users")
+
 @Getter @Setter @Builder
 @AllArgsConstructor @NoArgsConstructor
-@EntityListeners(AuditingEntityListener.class)
-public class User {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+public class UserDTO {
     private Long id;
-
-    @Column(unique = true)
     private String keycloakId;
-
-    @NotBlank
     private String firstName;
-
-    @NotBlank
     private String lastName;
-
-    @Email @NotBlank
-    @Column(unique = true)
     private String email;
-
     private String phone;
     private String location;
     private String zipCode;
-
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
     private Role role;
-
-    @CreatedDate
-    @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
     public Long getId() {
@@ -60,27 +34,27 @@ public class User {
         this.keycloakId = keycloakId;
     }
 
-    public @NotBlank String getFirstName() {
+    public String getFirstName() {
         return firstName;
     }
 
-    public void setFirstName(@NotBlank String firstName) {
+    public void setFirstName(String firstName) {
         this.firstName = firstName;
     }
 
-    public @NotBlank String getLastName() {
+    public String getLastName() {
         return lastName;
     }
 
-    public void setLastName(@NotBlank String lastName) {
+    public void setLastName(String lastName) {
         this.lastName = lastName;
     }
 
-    public @Email @NotBlank String getEmail() {
+    public String getEmail() {
         return email;
     }
 
-    public void setEmail(@Email @NotBlank String email) {
+    public void setEmail(String email) {
         this.email = email;
     }
 

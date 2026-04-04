@@ -1,6 +1,8 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
-import { User } from '../Service/user';
 import { Router } from '@angular/router';
+import { KeycloakService } from 'keycloak-angular';
+import { KeycloakProfile } from 'keycloak-js';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 
 @Component({
   selector: 'app-profil',
@@ -9,74 +11,89 @@ import { Router } from '@angular/router';
   styleUrl: './profil.css',
 })
 export class Profil implements OnInit {
-  userData: any = null;
-  
-  // Variables pour le Modal
-  isModalOpen: boolean = false;
-  editData = {
-    firstName: '',
-    lastName: '',
-    phone: ''
-  };
+  userData: KeycloakProfile | null = null;
+  userRoles: string[] = [];
+  localProfile: any = null; // from your UserMicroservice via gateway
 
-  constructor(private userService: User, private router: Router,     private cdr: ChangeDetectorRef 
-) {}
+  isModalOpen = false;
+  editData = { firstName: '', lastName: '', phone: '', zipCode: '', location: '' };
 
-  ngOnInit() {
-    this.userData = this.userService.getUserInfo();
-    if (!this.userData) {
-      this.router.navigate(['/login']); 
-    } else {
-      this.editData.firstName = this.userData.firstName || '';
-      this.editData.lastName = this.userData.lastName || '';
-      this.editData.phone = this.userData.phone || '';
-    }
+  private readonly GATEWAY = 'http://localhost:8085';
+
+  constructor(
+    private keycloakService: KeycloakService,
+    private router: Router,
+    private cdr: ChangeDetectorRef,
+    private http: HttpClient,
+  ) {}
+
+  async ngOnInit() {
+    const isLoggedIn = await this.keycloakService.isLoggedIn();
+    if (!isLoggedIn) { this.keycloakService.login(); return; }
+
+    this.userData = await this.keycloakService.loadUserProfile();
+    this.userRoles = this.keycloakService.getUserRoles();
+
+    this.editData.firstName = this.userData.firstName || '';
+    this.editData.lastName = this.userData.lastName || '';
+
+    // Load extra profile data from UserMicroservice via Gateway
+    const token = await this.keycloakService.getToken()
+                  || sessionStorage.getItem('kc_token') || '';
+    this.http.get(`${this.GATEWAY}/users/me`, {
+      headers: { Authorization: `Bearer ${token}` }
+    }).subscribe({
+      next: (profile: any) => {
+        this.localProfile = profile;
+        this.editData.phone    = profile.phone    || '';
+        this.editData.zipCode  = profile.zipCode  || '';
+        this.editData.location = profile.location || '';
+        this.cdr.detectChanges();
+      },
+      error: (e) => console.warn('Could not load local profile:', e)
+    });
+
+    this.cdr.detectChanges();
   }
 
   onLogout() {
-    this.userService.logout();
-    this.router.navigate(['/login']);
+    sessionStorage.clear();
+    this.keycloakService.logout(window.location.origin + '/login');
   }
 
-  // --- LOGIQUE DU MODAL ---
-  
-  openModal() {
-    this.isModalOpen = true;
-    document.body.style.overflow = 'hidden'; 
-  }
-
+  openModal() { this.isModalOpen = true; }
   closeModal(event?: Event) {
-    if (event && (event.target as HTMLElement).classList.contains('modal-content')) {
-      return;
-    }
-    
+    if (event && (event.target as HTMLElement).classList.contains('modal-content')) return;
     this.isModalOpen = false;
-    document.body.style.overflow = 'auto'; 
   }
 
-saveProfile() {
-  if (!this.userData?.id) return;
+  async saveProfile() {
+    const token = await this.keycloakService.getToken()
+                  || sessionStorage.getItem('kc_token') || '';
 
-  this.userService.updateUser(this.userData.id, this.editData).subscribe({
-    next: (res: any) => {
-      console.log("Update et Nouveau Token reçus !", res);
-      
-      // 1. ON SAUVEGARDE LE NOUVEAU TOKEN (C'est le secret !)
-      this.userService.saveToken(res.token);
-      
-      // 2. ON RE-DÉCODE LE TOKEN POUR METTRE À JOUR L'AFFICHAGE
-      // Comme ça, userData contient les nouveaux firstName/lastName
-      this.userData = this.userService.getUserInfo();
-      
-      this.closeModal();
-                this.cdr.detectChanges(); 
+    // Update Keycloak profile
+    this.http.post(
+      `http://localhost:8100/realms/MY2TEK-realm/account`,
+      {
+        id: this.userData?.id,
+        username: this.userData?.username,
+        email: this.userData?.email,
+        firstName: this.editData.firstName,
+        lastName: this.editData.lastName,
+      },
+      { headers: new HttpHeaders({ Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }) }
+    ).subscribe();
 
-      // Le message "Profil incomplet" disparaîtra tout seul car userData est à jour
-    },
-    error: (err) => {
-      console.error("Erreur update", err);
-      alert("Erreur lors de la mise à jour.");
-    }
-  });
-}
+    // Update local profile via Gateway → UserMicroservice
+    this.http.put(`${this.GATEWAY}/users/me`, this.editData, {
+      headers: { Authorization: `Bearer ${token}` }
+    }).subscribe({
+      next: async () => {
+        this.userData = await this.keycloakService.loadUserProfile();
+        this.isModalOpen = false;
+        this.cdr.detectChanges();
+      },
+      error: (e) => console.error('Update failed:', e)
+    });
+  }
 }

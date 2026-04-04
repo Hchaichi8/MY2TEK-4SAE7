@@ -13,40 +13,42 @@
         </div>
 
         <div *ngIf="errorMessage" class="alert alert-danger fade-in">
-          <span class="icon">⚠️</span> {{ errorMessage }}
+          <i class="fas fa-exclamation-circle"></i> {{ errorMessage }}
         </div>
-        
         <div *ngIf="successMessage" class="alert alert-success fade-in">
-          <span class="icon">✅</span> {{ successMessage }}
+          <i class="fas fa-check-circle"></i> {{ successMessage }}
         </div>
 
         <form class="auth-form" (ngSubmit)="onRegister()">
-          <div class="row">
-            <div class="input-group">
-              <label>Prénom</label>
-              <input type="text" name="firstName" [(ngModel)]="userData.firstName" placeholder="Prénom" required>
-            </div>
-            <div class="input-group">
-              <label>Nom</label>
-              <input type="text" name="lastName" [(ngModel)]="userData.lastName" placeholder="Nom" required>
-            </div>
+          <div class="input-group">
+            <label>Username</label>
+            <input type="text" name="username" [(ngModel)]="regData.username" required placeholder="Votre pseudo">
           </div>
-          
+
+          <div class="input-group">
+            <label>Prénom</label>
+            <input type="text" name="firstName" [(ngModel)]="regData.firstName" required placeholder="Prénom">
+          </div>
+
+          <div class="input-group">
+            <label>Nom</label>
+            <input type="text" name="lastName" [(ngModel)]="regData.lastName" required placeholder="Nom">
+          </div>
+
           <div class="input-group">
             <label>Email</label>
-            <input type="email" name="email" [(ngModel)]="userData.email" placeholder="nom@exemple.tn" required>
-          </div>
-          
-          <div class="input-group">
-            <label>Localisation (Ville)</label>
-            <input type="text" name="location" [(ngModel)]="userData.location" placeholder="Tunis, Nabeul...">
+            <input type="email" name="email" [(ngModel)]="regData.email" required placeholder="votre@email.com">
           </div>
           
           <div class="input-group">
             <label>Mot de passe</label>
-            <input name="password" type="password" [(ngModel)]="userData.password" placeholder="••••••••" required>
+            <input type="password" name="password" [(ngModel)]="regData.password" required placeholder="••••••••">
           </div>
-          
+          <div class="input-group">
+  <label>Confirmer le mot de passe</label>
+  <input type="password" name="confirmPassword" [(ngModel)]="regData.confirmPassword" required placeholder="••••••••">
+</div>
+
           <button type="submit" class="btn-primary" [disabled]="isLoading">
             <span *ngIf="!isLoading">Créer mon compte</span>
             <span *ngIf="isLoading" class="loader"></span>

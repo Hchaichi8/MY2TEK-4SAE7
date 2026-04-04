@@ -25,6 +25,13 @@ public class ApigetwayApplication {
                                 .dedupeResponseHeader("Access-Control-Allow-Credentials", "RETAIN_UNIQUE")
                         )
                         .uri("lb://USERMICROSERVICE"))
+                .route("idroutereview", r -> r.path("/Review/**")
+                        .filters(f -> f
+                                .stripPrefix(0)
+                                .dedupeResponseHeader("Access-Control-Allow-Origin", "RETAIN_UNIQUE")
+                                .dedupeResponseHeader("Access-Control-Allow-Credentials", "RETAIN_UNIQUE")
+                        )
+                        .uri("lb://MSCompetenceAndReview"))
                 .build();
     }
 }

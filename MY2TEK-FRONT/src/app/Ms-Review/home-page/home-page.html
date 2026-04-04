@@ -1,22 +1,82 @@
 <div class="home-container">
   <nav class="home-nav">
     <div class="logo">MY2<span>TEK</span></div>
+
     <div class="nav-links">
       <a href="#">PC Gamer</a>
       <a href="#">Composants</a>
       <a href="#">Périphériques</a>
     </div>
+
     <div class="nav-icons">
       <i class="fa-solid fa-magnifying-glass"></i>
       <i class="fa-solid fa-cart-shopping"></i>
-      <div class="user-pill" routerLink="/Login">Connexion</div>
+
+      <!-- Loading skeleton -->
+      <div *ngIf="isLoggedIn === null" class="nav-skeleton"></div>
+
+      <!-- Guest -->
+      <div *ngIf="isLoggedIn === false" class="user-pill" (click)="onLogin()">
+        Connexion
+      </div>
+
+      <!-- Logged in -->
+      <div *ngIf="isLoggedIn === true" class="user-menu">
+        <div class="user-pill-logged" (click)="goToProfile()">
+          <div class="user-avatar">{{ userInitials }}</div>
+          <span class="user-name">
+            {{ userData?.firstName || userData?.username }}
+          </span>
+          <i class="fa-solid fa-chevron-down" style="font-size: 10px; opacity: 0.6;"></i>
+        </div>
+
+        <div class="user-dropdown">
+          <div class="dropdown-header">
+            <div class="dropdown-avatar">{{ userInitials }}</div>
+            <div class="dropdown-info">
+              <span class="dropdown-name">
+                {{ userData?.firstName }} {{ userData?.lastName }}
+              </span>
+              <span class="dropdown-email">{{ userData?.email }}</span>
+            </div>
+          </div>
+          <hr class="dropdown-divider">
+          <div class="dropdown-item" (click)="goToProfile()">
+            <i class="fa-solid fa-user"></i> Mon Profil
+          </div>
+          <div class="dropdown-item" routerLink="/orders">
+            <i class="fa-solid fa-box"></i> Mes Commandes
+          </div>
+          <div class="dropdown-item" routerLink="/settings">
+            <i class="fa-solid fa-gear"></i> Paramètres
+          </div>
+          <hr class="dropdown-divider">
+          <div class="dropdown-item logout" (click)="onLogout()">
+            <i class="fa-solid fa-right-from-bracket"></i> Déconnexion
+          </div>
+        </div>
+      </div>
     </div>
   </nav>
 
   <section class="hero">
-    <div class="hero-overlay"></div> <div class="hero-content">
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
       <span class="badge-new animate-pop">🔥 Nouveauté 2026</span>
-      <h1>L'Excellence Hardware <br><span>MY2TEK</span></h1>
+
+      <!-- Loading state — show generic title -->
+      <h1 *ngIf="isLoggedIn === null">
+        L'Excellence Hardware <br><span>MY2TEK</span>
+      </h1>
+      <!-- Personalized greeting -->
+      <h1 *ngIf="isLoggedIn === true">
+        Bonjour, <span>{{ userData?.firstName || userData?.username }}</span> 👋
+      </h1>
+      <!-- Guest -->
+      <h1 *ngIf="isLoggedIn === false">
+        L'Excellence Hardware <br><span>MY2TEK</span>
+      </h1>
+
       <p>Équipez-vous avec le summum de la technologie. Performances extrêmes pour les Gamers et Créateurs exigeants.</p>
       <div class="hero-btns">
         <button class="btn-primary">Découvrir le Setup</button>
@@ -54,7 +114,11 @@
           <span class="category-name">ASUS ROG</span>
           <h3>RTX 4090 Strix Edition</h3>
           <div class="rating">
-            <div class="stars"><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i></div>
+            <div class="stars">
+              <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+              <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+              <i class="fa-solid fa-star"></i>
+            </div>
             <span>(128 avis)</span>
           </div>
           <div class="card-footer">
@@ -73,7 +137,11 @@
           <span class="category-name">AMD Ryzen</span>
           <h3>AMD Ryzen 9 7950X3D</h3>
           <div class="rating">
-            <div class="stars"><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star-half-stroke"></i></div>
+            <div class="stars">
+              <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+              <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+              <i class="fa-solid fa-star-half-stroke"></i>
+            </div>
             <span>(84 avis)</span>
           </div>
           <div class="card-footer">
@@ -92,7 +160,11 @@
           <span class="category-name">Corsair</span>
           <h3>Dominator Platinum 64GB</h3>
           <div class="rating">
-            <div class="stars"><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i></div>
+            <div class="stars">
+              <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+              <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+              <i class="fa-solid fa-star"></i>
+            </div>
             <span>(42 avis)</span>
           </div>
           <div class="card-footer">

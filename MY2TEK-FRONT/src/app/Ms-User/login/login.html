@@ -4,11 +4,11 @@
       <div class="auth-card">
         <div class="auth-header">
           <h1 class="logo">MY2<span>TEK</span></h1>
-          <p>Bon retour parmi nous !</p>
+          <p>Bienvenue sur notre plateforme sécurisée</p>
         </div>
 
         <div class="tab-group">
-          <button class="tab-btn active" >Connexion</button>
+          <button class="tab-btn active">Connexion</button>
           <button class="tab-btn" routerLink="/Register">Inscription</button>
         </div>
 
@@ -22,8 +22,8 @@
 
         <form class="auth-form" (ngSubmit)="onLogin()">
           <div class="input-group">
-            <label>Email</label>
-            <input type="email" name="email" [(ngModel)]="loginData.email" required placeholder="votre@email.com">
+            <label>Email / Username</label>
+            <input type="text" name="email" [(ngModel)]="loginData.email" required placeholder="votre@email.com">
           </div>
           
           <div class="input-group">
@@ -31,15 +31,8 @@
             <input type="password" name="password" [(ngModel)]="loginData.password" required placeholder="••••••••">
           </div>
 
-          <div class="form-extras">
-            <label class="remember-me">
-              <input type="checkbox"> Se souvenir
-            </label>
-            <a routerLink="/forgot-password" class="forgot-link">Mot de passe oublié ?</a>
-          </div>
-
           <button type="submit" class="btn-primary" [disabled]="isLoading">
-            <span *ngIf="!isLoading">Se Connecter</span>
+            <span *ngIf="!isLoading">Accéder au portail MY2TEK</span>
             <span *ngIf="isLoading" class="loader"></span>
           </button>
         </form>
@@ -48,16 +41,16 @@
           <span>OU</span>
         </div>
 
-       <div class="google-btn-container">
-  <asl-google-signin-button 
-    type="standard" 
-    size="large" 
-    [width]="350">
-  </asl-google-signin-button>
-</div>
+        <div class="google-btn-container">
+          <button type="button" class="btn-secondary" (click)="loginWithGoogle()" 
+                  style="width: 100%; padding: 12px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; border: 1px solid #ddd; background: white;">
+            <img src="https://fonts.gstatic.com/s/i/productlogos/googleg/v6/24px.svg" width="20px">
+            Continuer avec Google
+          </button>
+        </div>
         
         <div class="auth-footer">
-          <p>Nouveau chez MY2TEK ? <span routerLink="/Register" class="link">Créer un compte</span></p>
+          <p>La sécurité est gérée par <strong>Keycloak & Google</strong></p>
         </div>
       </div>
     </div>
