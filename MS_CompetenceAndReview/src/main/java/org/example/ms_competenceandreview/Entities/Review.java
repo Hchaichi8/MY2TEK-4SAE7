@@ -36,7 +36,11 @@ public class Review {
 
     // --- NEW FIELDS ---
 
+    @Column(name = "client_name")
+    private String clientName;
 
+    public String getClientName() { return clientName; }
+    public void setClientName(String clientName) { this.clientName = clientName; }
 
     @Column(name = "client_id")
     private String clientId;

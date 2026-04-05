@@ -16,21 +16,17 @@ export class AuthInterceptor implements HttpInterceptor {
       return next.handle(req);
     }
 
-    const getToken = async (): Promise<string> => {
-      // ✅ Check sessionStorage FIRST (manual login)
-      const sessionToken = sessionStorage.getItem('kc_token');
-      if (sessionToken) return sessionToken;
+    // ✅ Check sessionStorage FIRST — never trigger Keycloak refresh for manual logins
+    const sessionToken = sessionStorage.getItem('kc_token');
+    if (sessionToken) {
+      const authReq = req.clone({
+        setHeaders: { Authorization: `Bearer ${sessionToken}` }
+      });
+      return next.handle(authReq);
+    }
 
-      // ✅ Then try Keycloak SSO (Google login)
-      try {
-        const loggedIn = await this.keycloakService.isLoggedIn();
-        if (loggedIn) return await this.keycloakService.getToken();
-      } catch {}
-
-      return '';
-    };
-
-    return from(getToken()).pipe(
+    // ✅ Only call keycloakService if NO sessionStorage token exists (Google/SSO login)
+    return from(this.keycloakService.getToken()).pipe(
       switchMap(token => {
         const authReq = token
           ? req.clone({ setHeaders: { Authorization: `Bearer ${token}` } })

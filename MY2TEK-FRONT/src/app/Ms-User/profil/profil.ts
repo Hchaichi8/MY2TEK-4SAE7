@@ -13,7 +13,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 export class Profil implements OnInit {
   userData: KeycloakProfile | null = null;
   userRoles: string[] = [];
-  localProfile: any = null; // from your UserMicroservice via gateway
+  localProfile: any = null; 
 
   isModalOpen = false;
   editData = { firstName: '', lastName: '', phone: '', zipCode: '', location: '' };
