@@ -446,4 +446,86 @@
   font-weight: 600;
   margin-top: 20px;
   cursor: pointer;
+}/* Tab reviews badge */
+.review-badge {
+  background: #6366f1;
+  color: white;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  font-size: 11px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 6px;
+}
+
+/* Reviews list */
+.my-reviews-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.my-review-card {
+  background: #f8f9ff;
+  border-radius: 12px;
+  padding: 16px;
+  border-left: 4px solid #6366f1;
+}
+
+.review-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.review-product-info {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #6366f1;
+}
+
+.review-date {
+  font-size: 12px;
+  color: #888;
+}
+
+.review-stars {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin-bottom: 8px;
+}
+
+.rating-text {
+  font-size: 12px;
+  color: #888;
+  margin-left: 6px;
+}
+
+.review-description {
+  font-size: 14px;
+  color: #444;
+  font-style: italic;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.no-reviews-profile {
+  text-align: center;
+  padding: 40px;
+  color: #888;
+}
+
+.no-reviews-profile i {
+  font-size: 40px;
+  opacity: 0.3;
+  margin-bottom: 12px;
+  display: block;
 }

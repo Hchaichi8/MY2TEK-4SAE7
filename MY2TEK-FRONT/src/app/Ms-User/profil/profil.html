@@ -1,22 +1,17 @@
 <nav class="navbar">
   <div class="nav-container">
-    <div class="nav-brand" routerLink="/home">
-      MY2<span>TEK</span>
-    </div>
-
+    <div class="nav-brand" routerLink="/home">MY2<span>TEK</span></div>
     <div class="nav-search">
       <input type="text" placeholder="Rechercher un composant, un PC...">
       <button><i class="fas fa-search"></i></button>
     </div>
-
     <div class="nav-actions">
       <a class="nav-link" routerLink="/home"><i class="fas fa-home"></i> <span>Accueil</span></a>
-      <a class="nav-link" routerLink="/wishlist"><i class="fas fa-heart"></i> <span class="badge">0</span></a>
+      <a class="nav-link" routerLink="/wishlist"><i class="fas fa-heart"></i></a>
       <a class="nav-link cart-link" routerLink="/cart">
         <i class="fas fa-shopping-cart"></i>
         <span class="cart-count">3</span>
       </a>
-      
       <div class="user-dropdown">
         <div class="user-trigger">
           <div class="avatar-sm">{{ userData?.firstName?.charAt(0)?.toUpperCase() }}</div>
@@ -37,7 +32,19 @@
 
     <div class="profile-layout">
       <aside class="profile-nav">
-        <a class="p-nav-item active"><i class="fas fa-user"></i> Informations personnelles</a>
+        <a class="p-nav-item"
+           [class.active]="activeTab === 'profile'"
+           (click)="setTab('profile')">
+          <i class="fas fa-user"></i> Informations personnelles
+        </a>
+        <a class="p-nav-item"
+           [class.active]="activeTab === 'reviews'"
+           (click)="setTab('reviews')">
+          <i class="fas fa-star"></i> Mes Avis
+          <span class="review-badge" *ngIf="myReviews.length > 0">
+            {{ myReviews.length }}
+          </span>
+        </a>
         <a class="p-nav-item"><i class="fas fa-box"></i> Mes Commandes</a>
         <a class="p-nav-item"><i class="fas fa-map-marker-alt"></i> Mes Adresses</a>
         <a class="p-nav-item"><i class="fas fa-shield-alt"></i> Sécurité</a>
@@ -46,56 +53,114 @@
       </aside>
 
       <section class="profile-content">
-        <div class="profile-alert" *ngIf="!userData?.firstName || !userData?.lastName ">
-          <div class="alert-icon"><i class="fas fa-exclamation-circle"></i></div>
-          <div class="alert-text">
-            <strong>Profil incomplet !</strong>
-            <p>Veuillez compléter votre identité pour vos livraisons MY2TEK.</p>
+
+        <!-- ✅ PROFILE TAB -->
+        <div *ngIf="activeTab === 'profile'">
+          <div class="profile-alert" *ngIf="!userData?.firstName || !userData?.lastName">
+            <div class="alert-icon"><i class="fas fa-exclamation-circle"></i></div>
+            <div class="alert-text">
+              <strong>Profil incomplet !</strong>
+              <p>Veuillez compléter votre identité pour vos livraisons MY2TEK.</p>
+            </div>
+            <button class="btn-complete" (click)="openModal()">Compléter</button>
           </div>
-          <button class="btn-complete" (click)="openModal()">Compléter</button>
-        </div>
 
-        <div class="content-card">
-          <div class="card-header">
-            <div class="user-identity">
-              <h2 class="full-name">{{ userData?.firstName }} {{ userData?.lastName }}</h2>
-              <p class="user-email-sub">{{ userData?.email }}</p>
-            </div>
-            <button class="edit-link" (click)="openModal()">
-              <i class="fas fa-pen"></i> Modifier mon profil
-            </button>
-          </div>
-          
-          <div class="user-info-grid">
-            <div class="info-group">
-              <label><i class="fas fa-user-circle"></i> Nom d'utilisateur</label>
-              <div class="info-value"><span>{{ userData?.username }}</span></div>
+          <div class="content-card">
+            <div class="card-header">
+              <div class="user-identity">
+                <h2 class="full-name">{{ userData?.firstName }} {{ userData?.lastName }}</h2>
+                <p class="user-email-sub">{{ userData?.email }}</p>
+              </div>
+              <button class="edit-link" (click)="openModal()">
+                <i class="fas fa-pen"></i> Modifier mon profil
+              </button>
             </div>
 
-            <div class="info-group">
-              <label><i class="fas fa-phone"></i> Téléphone</label>
-              <div class="info-value"><span>{{ editData.phone || 'Non renseigné' }}</span></div>
-            </div>
-
-            <div class="info-group">
-              <label><i class="fas fa-map-marker-alt"></i> Localisation</label>
-              <div class="info-value">
-                <span>{{ editData.location || 'Non renseigné' }} <small *ngIf="editData.zipCode">({{editData.zipCode}})</small></span>
+            <div class="user-info-grid">
+              <div class="info-group">
+                <label><i class="fas fa-user-circle"></i> Nom d'utilisateur</label>
+                <div class="info-value"><span>{{ userData?.username }}</span></div>
+              </div>
+              <div class="info-group">
+                <label><i class="fas fa-phone"></i> Téléphone</label>
+                <div class="info-value">
+                  <span>{{ editData.phone || 'Non renseigné' }}</span>
+                </div>
+              </div>
+              <div class="info-group">
+                <label><i class="fas fa-map-marker-alt"></i> Localisation</label>
+                <div class="info-value">
+                  <span>
+                    {{ editData.location || 'Non renseigné' }}
+                    <small *ngIf="editData.zipCode">({{ editData.zipCode }})</small>
+                  </span>
+                </div>
               </div>
             </div>
           </div>
         </div>
+
+        <!-- ✅ REVIEWS TAB -->
+        <div *ngIf="activeTab === 'reviews'">
+          <div class="content-card">
+            <div class="card-header">
+              <div class="user-identity">
+                <h2 class="full-name">Mes Avis Publiés</h2>
+                <p class="user-email-sub">{{ myReviews.length }} avis publié(s)</p>
+              </div>
+              <button class="edit-link" routerLink="/detail-product">
+                <i class="fas fa-plus"></i> Laisser un avis
+              </button>
+            </div>
+
+            <!-- No reviews -->
+            <div *ngIf="myReviews.length === 0" class="no-reviews-profile">
+              <i class="fa-regular fa-comment-dots"></i>
+              <p>Vous n'avez pas encore publié d'avis.</p>
+            </div>
+
+            <!-- Reviews list -->
+            <div class="my-reviews-list">
+              <div class="my-review-card" *ngFor="let r of myReviews">
+                <div class="review-card-header">
+                  <div class="review-product-info">
+                    <i class="fas fa-box"></i>
+                    <span>Produit #{{ r.productId }}</span>
+                  </div>
+                  <span class="review-date">
+                    {{ r.createdAt | date:'dd MMM yyyy' }}
+                  </span>
+                </div>
+
+                <div class="review-stars">
+                  <i class="fa-solid fa-star"
+                     *ngFor="let s of getStars(r.rating)"
+                     style="color: #f59e0b; font-size: 14px;"></i>
+                  <i class="fa-regular fa-star"
+                     *ngFor="let s of [].constructor(5 - r.rating)"
+                     style="color: #f59e0b; font-size: 14px;"></i>
+                  <span class="rating-text">{{ r.rating }}/5</span>
+                </div>
+
+                <p class="review-description">"{{ r.description }}"</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
       </section>
     </div>
   </div>
 
+  <!-- Modal -->
   <div class="modal-overlay" *ngIf="isModalOpen" (click)="closeModal($event)">
     <div class="modal-content" (click)="$event.stopPropagation()">
       <div class="modal-header">
         <h2>Modifier mon profil</h2>
-        <button class="close-btn" (click)="closeModal()"><i class="fas fa-times"></i></button>
+        <button class="close-btn" (click)="closeModal()">
+          <i class="fas fa-times"></i>
+        </button>
       </div>
-      
       <div class="modal-body">
         <form (ngSubmit)="saveProfile()">
           <div class="form-row">
@@ -108,7 +173,6 @@
               <input type="text" name="lastName" [(ngModel)]="editData.lastName">
             </div>
           </div>
-
           <div class="form-row">
             <div class="form-group">
               <label>Téléphone</label>
@@ -119,14 +183,12 @@
               <input type="text" name="zipCode" [(ngModel)]="editData.zipCode" placeholder="Ex: 8090">
             </div>
           </div>
-
           <div class="form-row">
             <div class="form-group">
               <label>Ville / Gouvernorat</label>
               <input type="text" name="location" [(ngModel)]="editData.location" placeholder="Ex: Tunis">
             </div>
           </div>
-
           <div class="modal-footer">
             <button type="button" class="btn-cancel" (click)="closeModal()">Annuler</button>
             <button type="submit" class="btn-save">Enregistrer les modifications</button>
