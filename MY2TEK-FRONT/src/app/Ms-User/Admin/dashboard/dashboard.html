@@ -14,8 +14,11 @@
       <a class="nav-link">
         <i class="fa-solid fa-laptop-code"></i> <span>Produits</span>
       </a>
-      <a class="nav-link">
-        <i class="fa-solid fa-receipt"></i> <span>Commandes</span>
+      <a class="nav-link" routerLink="/admin/shipping">
+        <i class="fas fa-truck"></i> <span>Livraisons</span>
+      </a>
+      <a class="nav-link" routerLink="/admin/carriers">
+        <i class="fas fa-building"></i> <span>Transporteurs</span>
       </a>
       <div class="nav-divider"></div>
       <a class="nav-link logout-link" (click)="onLogout()">

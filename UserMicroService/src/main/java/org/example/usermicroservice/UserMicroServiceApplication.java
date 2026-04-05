@@ -11,6 +11,8 @@ import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 public class UserMicroServiceApplication {
 
     public static void main(String[] args) {
+        // Prevent Eureka from blocking startup if server is unavailable
+        System.setProperty("eureka.client.should-enforce-registration-at-init", "false");
         SpringApplication.run(UserMicroServiceApplication.class, args);
     }
 
