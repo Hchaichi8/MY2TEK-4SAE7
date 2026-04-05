@@ -1,5 +1,7 @@
 package org.example.ms_commandes.Controllers;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.example.ms_commandes.Entities.Commande;
 import org.example.ms_commandes.Entities.StatutCommande;
 import org.example.ms_commandes.Services.Interface.CommandeService;
@@ -11,6 +13,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/Commandes")
+@Tag(name = "Commandes", description = "API de gestion des commandes MY2TEK")
 public class CommandeController {
 
     private final CommandeService commandeService;
@@ -19,6 +22,7 @@ public class CommandeController {
         this.commandeService = commandeService;
     }
 
+    @Operation(summary = "Créer une commande — vérifie l'utilisateur via Feign (UserMicroService)")
     @PostMapping("/creer")
     public ResponseEntity<?> creerCommande(@RequestBody Commande commande) {
         try {
@@ -28,11 +32,13 @@ public class CommandeController {
         }
     }
 
+    @Operation(summary = "Lister toutes les commandes")
     @GetMapping("/all")
     public List<Commande> getAllCommandes() {
         return commandeService.getAllCommandes();
     }
 
+    @Operation(summary = "Obtenir une commande par ID")
     @GetMapping("/{id}")
     public ResponseEntity<Commande> getById(@PathVariable Long id) {
         try {
@@ -42,21 +48,25 @@ public class CommandeController {
         }
     }
 
+    @Operation(summary = "Commandes d'un client par path variable")
     @GetMapping("/client/{clientId}")
     public List<Commande> getByClient(@PathVariable String clientId) {
         return commandeService.getCommandesByClient(clientId);
     }
 
+    @Operation(summary = "Commandes d'un client par query param")
     @GetMapping("/client")
     public List<Commande> getByClientParam(@RequestParam String clientId) {
         return commandeService.getCommandesByClient(clientId);
     }
 
+    @Operation(summary = "Commandes par statut")
     @GetMapping("/statut/{statut}")
     public List<Commande> getByStatut(@PathVariable StatutCommande statut) {
         return commandeService.getCommandesByStatut(statut);
     }
 
+    @Operation(summary = "Modifier une commande (seulement si statut CREATED)")
     @PutMapping("/{id}")
     public ResponseEntity<?> updateCommande(@PathVariable Long id, @RequestBody Commande updated) {
         try {
@@ -73,6 +83,7 @@ public class CommandeController {
         }
     }
 
+    @Operation(summary = "Changer le statut — publie dans RabbitMQ si DELIVERED")
     @PutMapping("/{id}/statut/{statut}")
     public ResponseEntity<?> updateStatut(@PathVariable Long id, @PathVariable StatutCommande statut) {
         try {
@@ -82,6 +93,7 @@ public class CommandeController {
         }
     }
 
+    @Operation(summary = "Annuler une commande")
     @DeleteMapping("/annuler/{id}")
     public ResponseEntity<?> annulerCommande(@PathVariable Long id) {
         try {
