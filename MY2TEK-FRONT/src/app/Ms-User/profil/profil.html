@@ -37,7 +37,12 @@
 
     <div class="profile-layout">
       <aside class="profile-nav">
-        <a class="p-nav-item active"><i class="fas fa-user"></i> Informations personnelles</a>
+        <a class="p-nav-item" [class.active]="activeTab === 'info'" (click)="setTab('info')">
+          <i class="fas fa-user"></i> Informations personnelles
+        </a>
+        <a class="p-nav-item" [class.active]="activeTab === 'livraisons'" (click)="setTab('livraisons')">
+          <i class="fas fa-truck"></i> Mes Livraisons
+        </a>
         <a class="p-nav-item"><i class="fas fa-box"></i> Mes Commandes</a>
         <a class="p-nav-item"><i class="fas fa-map-marker-alt"></i> Mes Adresses</a>
         <a class="p-nav-item"><i class="fas fa-shield-alt"></i> Sécurité</a>
@@ -46,6 +51,9 @@
       </aside>
 
       <section class="profile-content">
+
+  <!-- INFO TAB -->
+  <div *ngIf="activeTab === 'info'">
   <div class="profile-alert" *ngIf="!userData?.firstName || !userData?.lastName">
     <div class="alert-icon"><i class="fas fa-exclamation-circle"></i></div>
     <div class="alert-text">
@@ -67,7 +75,6 @@
         <i class="fas fa-pen"></i> Modifier
       </button>
     </div>
-    
     <div class="user-info-grid">
       <div class="info-group">
         <label>Type de compte</label>
@@ -83,12 +90,87 @@
       </div>
     </div>
   </div>
+  </div>
+
+  <!-- LIVRAISONS TAB -->
+  <div *ngIf="activeTab === 'livraisons'">
+    <div class="livraisons-header">
+      <h2><i class="fas fa-truck"></i> Mes Livraisons</h2>
+      <button class="btn-request" (click)="openRequest()">
+        <i class="fas fa-plus"></i> Demander une livraison
+      </button>
+    </div>
+
+    <!-- Track a shipment -->
+    <div class="track-box">
+      <input type="text" [(ngModel)]="trackingInput" placeholder="Entrez votre numéro de suivi (MY2TEK-XXXX)"
+             (keyup.enter)="trackShipment()">
+      <button class="btn-track" (click)="trackShipment()"><i class="fas fa-search"></i> Suivre</button>
+    </div>
+    <div class="track-error" *ngIf="trackError">{{ trackError }}</div>
+    <div class="tracked-result" *ngIf="trackedShipment">
+      <div class="tracked-header">
+        <span class="tracked-number">{{ trackedShipment.trackingNumber }}</span>
+        <span class="tracked-status" [style.background]="getStatusColor(trackedShipment.status) + '20'"
+              [style.color]="getStatusColor(trackedShipment.status)">
+          {{ getStatusLabel(trackedShipment.status) }}
+        </span>
+      </div>
+      <div class="tracked-info">
+        <span><i class="fas fa-map-marker-alt"></i> {{ trackedShipment.destination }}</span>
+        <span><i class="fas fa-building"></i> {{ trackedShipment.carrier?.name }}</span>
+        <span *ngIf="trackedShipment.estimatedDeliveryDate">
+          <i class="fas fa-calendar-check"></i>
+          Livraison estimée: {{ trackedShipment.estimatedDeliveryDate | date:'dd MMM yyyy' }}
+        </span>
+      </div>
+    </div>
+
+    <!-- My shipments list -->
+    <div class="loading-state" *ngIf="shipmentsLoading"><span class="mini-loader"></span></div>
+
+    <div class="shipments-list" *ngIf="!shipmentsLoading">
+      <div class="shipment-item" *ngFor="let s of myShipments">
+        <div class="shipment-left">
+          <div class="shipment-tracking">{{ s.trackingNumber }}</div>
+          <div class="shipment-meta">
+            Commande #{{ s.orderId }} · {{ s.destination }} · {{ s.carrier?.name }}
+          </div>
+          <div class="shipment-date">{{ s.createdAt | date:'dd MMM yyyy' }}</div>
+          <div class="shipment-estimated" *ngIf="s.estimatedDeliveryDate">
+            <i class="fas fa-calendar-check"></i>
+            Livraison estimée: {{ s.estimatedDeliveryDate | date:'dd MMM yyyy' }}
+          </div>
+        </div>
+        <div class="shipment-right">
+          <span class="shipment-status"
+                [style.background]="getStatusColor(s.status) + '20'"
+                [style.color]="getStatusColor(s.status)">
+            {{ getStatusLabel(s.status) }}
+          </span>
+          <span class="shipment-cost">{{ s.shippingCost | number:'1.2-2' }} TND</span>
+          <div class="shipment-actions">
+            <a [routerLink]="['/track', s.trackingNumber]" class="btn-view-track">
+              <i class="fas fa-eye"></i> Suivre
+            </a>
+            <button class="btn-return-req" *ngIf="s.status === 'DELIVERED'" (click)="openReturn(s)">
+              <i class="fas fa-undo-alt"></i> Retour
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="empty-livraisons" *ngIf="myShipments.length === 0">
+        <i class="fas fa-box-open"></i>
+        <p>Aucune livraison trouvée pour votre compte.</p>
+        <button class="btn-request" (click)="openRequest()">Demander une livraison</button>
+      </div>
+    </div>
+  </div>
 
   </section>
     </div>
   </div>
-  <div class="modal-overlay" *ngIf="isModalOpen" (click)="closeModal($event)">
-  <div class="modal-content" (click)="$event.stopPropagation()">
+  <div class="modal-overlay" *ngIf="isModalOpen" (click)="closeModal($event)">  <div class="modal-content" (click)="$event.stopPropagation()">
     <div class="modal-header">
       <h2>Modifier mes informations</h2>
       <button class="close-btn" (click)="closeModal()"><i class="fas fa-times"></i></button>
@@ -122,6 +204,78 @@
           <button type="submit" class="btn-save">Enregistrer</button>
         </div>
       </form>
+    </div>
+  </div>
+</div>
+
+<!-- REQUEST SHIPMENT MODAL -->
+<div class="modal-overlay" *ngIf="isRequestOpen" (click)="closeRequest()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2><i class="fas fa-truck"></i> Demander une livraison</h2>
+      <button class="close-btn" (click)="closeRequest()"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <div *ngIf="requestError" class="alert-error">{{ requestError }}</div>
+      <div *ngIf="requestSuccess" class="alert-success-msg">{{ requestSuccess }}</div>
+      <form (ngSubmit)="submitRequest()">
+        <div class="form-group">
+          <label>Numéro de commande</label>
+          <input type="number" name="orderId" [(ngModel)]="requestData.orderId" required placeholder="Ex: 101">
+        </div>
+        <div class="form-group">
+          <label>Adresse de livraison</label>
+          <input type="text" name="destination" [(ngModel)]="requestData.destination" required placeholder="Ex: Tunis, Ariana...">
+        </div>
+        <div class="form-row-2">
+          <div class="form-group">
+            <label>Poids estimé (kg)</label>
+            <input type="number" step="0.1" name="weightKg" [(ngModel)]="requestData.weightKg" placeholder="2.5">
+          </div>
+          <div class="form-group">
+            <label>Largeur (cm)</label>
+            <input type="number" name="widthCm" [(ngModel)]="requestData.widthCm" placeholder="30">
+          </div>
+        </div>
+        <div class="form-row-2">
+          <div class="form-group">
+            <label>Hauteur (cm)</label>
+            <input type="number" name="heightCm" [(ngModel)]="requestData.heightCm" placeholder="20">
+          </div>
+          <div class="form-group">
+            <label>Longueur (cm)</label>
+            <input type="number" name="lengthCm" [(ngModel)]="requestData.lengthCm" placeholder="40">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-cancel" (click)="closeRequest()">Annuler</button>
+          <button type="submit" class="btn-save">Envoyer la demande</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- RETURN MODAL -->
+<div class="modal-overlay" *ngIf="isReturnOpen" (click)="closeReturn()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2><i class="fas fa-undo-alt"></i> Demande de retour</h2>
+      <button class="close-btn" (click)="closeReturn()"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <div *ngIf="returnError" class="alert-error">{{ returnError }}</div>
+      <div *ngIf="returnSuccess" class="alert-success-msg">{{ returnSuccess }}</div>
+      <p style="color:#64748b; margin-bottom:16px;">Colis: <strong>{{ returnShipment?.trackingNumber }}</strong></p>
+      <div class="form-group">
+        <label>Raison du retour</label>
+        <textarea name="returnReason" [(ngModel)]="returnReason" rows="3"
+                  placeholder="Ex: Produit défectueux, mauvaise taille..."></textarea>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-cancel" (click)="closeReturn()">Annuler</button>
+        <button type="button" class="btn-save" (click)="submitReturn()">Confirmer le retour</button>
+      </div>
     </div>
   </div>
 </div>
