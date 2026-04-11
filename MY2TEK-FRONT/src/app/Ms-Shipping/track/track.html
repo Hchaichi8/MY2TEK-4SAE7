@@ -1,0 +1,133 @@
+<div class="track-page">
+  <nav class="navbar">
+    <div class="nav-container">
+      <div class="nav-brand" routerLink="/home">MY2<span>TEK</span></div>
+
+      <div class="nav-actions">
+        <!-- Loading -->
+        <div *ngIf="isLoggedIn === null" class="nav-skeleton"></div>
+
+        <!-- Guest -->
+        <ng-container *ngIf="isLoggedIn === false">
+          <a class="nav-link" routerLink="/login">Connexion</a>
+          <a class="nav-link" routerLink="/Register">Inscription</a>
+        </ng-container>
+
+        <!-- Logged in -->
+        <div *ngIf="isLoggedIn === true" class="user-menu">
+          <div class="user-pill-logged" (click)="goToProfile()">
+            <div class="user-avatar">{{ userInitials }}</div>
+            <span class="user-name">{{ userData?.firstName || userData?.username }}</span>
+          </div>
+          <div class="user-dropdown">
+            <div class="dropdown-item" (click)="goToProfile()">
+              <i class="fa-solid fa-user"></i> Mon Profil
+            </div>
+            <div class="dropdown-item" routerLink="/panier">
+              <i class="fa-solid fa-cart-shopping"></i> Panier
+            </div>
+            <div class="dropdown-item" routerLink="/mes-commandes">
+              <i class="fa-solid fa-box"></i> Mes Commandes
+            </div>
+            <hr class="dropdown-divider">
+            <div class="dropdown-item logout" (click)="onLogout()">
+              <i class="fa-solid fa-right-from-bracket"></i> Déconnexion
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <div class="hero-section">
+    <h1>Suivre mon colis</h1>
+    <p>Entrez votre numéro de suivi pour connaître l'état de votre livraison.</p>
+
+    <div class="search-box">
+      <input
+        type="text"
+        [(ngModel)]="inputTracking"
+        placeholder="Ex: MY2TEK-AB12CD34EF"
+        (keyup.enter)="search()"
+      />
+      <button class="btn-primary" (click)="search()" [disabled]="isLoading">
+        <span *ngIf="!isLoading">Rechercher</span>
+        <span *ngIf="isLoading" class="loader"></span>
+      </button>
+    </div>
+  </div>
+
+  <div class="result-section" *ngIf="errorMessage">
+    <div class="alert alert-danger fade-in">
+      <i class="fas fa-exclamation-circle"></i> {{ errorMessage }}
+    </div>
+  </div>
+
+  <div class="result-section" *ngIf="shipment">
+    <div class="shipment-card fade-in">
+      <div class="shipment-header">
+        <div>
+          <h2>{{ shipment.trackingNumber }}</h2>
+          <p>Commande #{{ shipment.orderId }} &bull; Transporteur: <strong>{{ shipment.carrier?.name }}</strong></p>
+        </div>
+        <span class="status-badge" [ngClass]="shipment.status.toLowerCase().replace('_','-')">
+          {{ getStepLabel(shipment.status) }}
+        </span>
+      </div>
+
+      <!-- Progress Stepper -->
+      <div class="stepper">
+        <div class="step" *ngFor="let step of steps; let i = index"
+             [class.done]="i <= getStepIndex()"
+             [class.active]="i === getStepIndex()">
+          <div class="step-circle">
+            <i class="fas" [ngClass]="i < getStepIndex() ? 'fa-check' : stepIcon(step)"></i>
+          </div>
+          <span class="step-label">{{ getStepLabel(step) }}</span>
+          <div class="step-line" *ngIf="i < steps.length - 1"></div>
+        </div>
+      </div>
+
+      <!-- Details -->
+      <div class="details-grid">
+        <div class="detail-item">
+          <label>Destinataire</label>
+          <span>{{ shipment.recipientName }}</span>
+        </div>
+        <div class="detail-item">
+          <label>Destination</label>
+          <span>{{ shipment.destination }}</span>
+        </div>
+        <div class="detail-item">
+          <label>Poids</label>
+          <span>{{ shipment.weightKg }} kg</span>
+        </div>
+        <div class="detail-item">
+          <label>Frais de livraison</label>
+          <span>{{ shipment.shippingCost | number:'1.2-2' }} TND</span>
+        </div>
+        <div class="detail-item">
+          <label>Date de création</label>
+          <span>{{ shipment.createdAt | date:'dd MMM yyyy, HH:mm' }}</span>
+        </div>
+        <div class="detail-item" *ngIf="shipment.estimatedDeliveryDate">
+          <label>Livraison estimée</label>
+          <span class="estimated-date">
+            <i class="fas fa-calendar-check"></i>
+            {{ shipment.estimatedDeliveryDate | date:'dd MMM yyyy' }}
+          </span>
+        </div>
+        <div class="detail-item">
+          <label>Dernière mise à jour</label>
+          <span>{{ shipment.updatedAt | date:'dd MMM yyyy, HH:mm' }}</span>
+        </div>
+      </div>
+
+      <!-- Label -->
+      <div class="label-box" *ngIf="shipment.labelData">
+        <h4><i class="fas fa-tag"></i> Étiquette de livraison</h4>
+        <pre>{{ shipment.labelData }}</pre>
+      </div>
+    </div>
+  </div>
+</div>

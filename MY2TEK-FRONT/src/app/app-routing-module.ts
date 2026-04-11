@@ -17,6 +17,10 @@ import { CreerCommande } from './Ms-Commandes/creer-commande/creer-commande';
 import { MesCommandes } from './Ms-Commandes/mes-commandes/mes-commandes';
 import { AdminCommandes } from './Ms-Commandes/admin-commandes/admin-commandes';
 import { Panier } from './Ms-Commandes/panier/panier';
+import { ShippingAdmin } from './Ms-Shipping/Admin/shipping-admin/shipping-admin';
+import { CarriersAdmin } from './Ms-Shipping/Admin/carriers-admin/carriers-admin';
+import { ShippingStats } from './Ms-Shipping/Admin/shipping-stats/shipping-stats';
+import { Track } from './Ms-Shipping/track/track';
 
 const routes: Routes = [
 
@@ -36,7 +40,13 @@ const routes: Routes = [
   { path: 'commandes/creer', component: CreerCommande },
   { path: 'mes-commandes', component: MesCommandes },
   { path: 'admin/commandes', component: AdminCommandes },
+   { path: 'admin/shipping', component: ShippingAdmin },
+  { path: 'admin/carriers', component: CarriersAdmin },
+  { path: 'admin/stats', component: ShippingStats },
 
+// Shipping - Public
+  { path: 'track', component: Track },
+  { path: 'track/:trackingNumber', component: Track },
   { path: 'user-admin', component: Useradmin },
   { path: 'dashboard-admin', component: Dashboard }
 

@@ -164,7 +164,9 @@
           <button class="btn-detail" (click)="voirDetail(c)">
             <i class="fas fa-eye"></i> Détails
           </button>
-          
+          <button class="btn-edit-card" routerLink="/track">
+            <i class="fas fa-pen"></i> Livraison
+          </button>
           <button class="btn-annuler-card" *ngIf="c.statut === 'CREATED'" (click)="annuler(c.id)">
             <i class="fas fa-times"></i>
           </button>

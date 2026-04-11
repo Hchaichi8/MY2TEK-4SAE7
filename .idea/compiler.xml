@@ -22,13 +22,14 @@
         </processorPath>
         <module name="MS_CompetenceAndReview" />
       </profile>
-      <profile name="Annotation profile for MS_Commandes" enabled="true">
+      <profile name="Annotation profile for ShippingMicroService" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <processorPath useClasspath="false">
           <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/unknown/lombok-unknown.jar" />
         </processorPath>
+        <module name="ShippingMicroService" />
         <module name="Product-MS" />
         <module name="MS_Commandes" />
       </profile>
@@ -39,6 +40,7 @@
       <module name="MS_Commandes" options="-parameters" />
       <module name="MS_CompetenceAndReview" options="-parameters" />
       <module name="Product-MS" options="-parameters" />
+      <module name="ShippingMicroService" options="-parameters" />
       <module name="UserMicroService" options="-parameters" />
       <module name="apigetway" options="-parameters" />
       <module name="config-server" options="-parameters" />

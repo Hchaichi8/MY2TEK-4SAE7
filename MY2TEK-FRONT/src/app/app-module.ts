@@ -35,6 +35,11 @@ import { CreerCommande } from './Ms-Commandes/creer-commande/creer-commande';
 import { MesCommandes } from './Ms-Commandes/mes-commandes/mes-commandes';
 import { AdminCommandes } from './Ms-Commandes/admin-commandes/admin-commandes';
 import { Panier } from './Ms-Commandes/panier/panier';
+import { Track } from './Ms-Shipping/track/track';
+import { ShippingAdmin } from './Ms-Shipping/Admin/shipping-admin/shipping-admin';
+import { CarriersAdmin } from './Ms-Shipping/Admin/carriers-admin/carriers-admin';
+import { ShippingStats } from './Ms-Shipping/Admin/shipping-stats/shipping-stats';
+import { StatusCountPipe } from './Ms-Shipping/pipes/status-count.pipe';
 
 // 1. Keycloak Initialization Function
 function initializeKeycloak(keycloak: KeycloakService) {
@@ -74,6 +79,11 @@ function initializeKeycloak(keycloak: KeycloakService) {
     MesCommandes,
     AdminCommandes,
     Panier,
+     Track,
+    ShippingAdmin,
+    CarriersAdmin,
+    ShippingStats,
+    StatusCountPipe,
 
   ],
   imports: [
