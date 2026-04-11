@@ -1,0 +1,166 @@
+<!-- NAVBAR -->
+<nav class="navbar">
+  <div class="nav-inner">
+    <div class="brand" routerLink="/home">MY2<span>TEK</span></div>
+    <div class="nav-right">
+      <a routerLink="/home" class="nav-link"><i class="fas fa-home"></i> Accueil</a>
+      <a routerLink="/mes-commandes" class="nav-link"><i class="fas fa-box"></i> Mes commandes</a>
+      <a routerLink="/Profil" class="nav-link"><i class="fas fa-user"></i> Mon compte</a>
+    </div>
+  </div>
+</nav>
+
+<div class="page">
+  <div class="container">
+
+    <!-- STEPS INDICATOR -->
+    <div class="steps-bar">
+      <div class="step-item" [class.active]="step === 'panier'" [class.done]="step !== 'panier'">
+        <div class="step-num">1</div><span>Mon Panier</span>
+      </div>
+      <div class="step-line" [class.done]="step !== 'panier'"></div>
+      <div class="step-item" [class.active]="step === 'confirmation'" [class.done]="step === 'succes'">
+        <div class="step-num">2</div><span>Confirmation</span>
+      </div>
+      <div class="step-line" [class.done]="step === 'succes'"></div>
+      <div class="step-item" [class.active]="step === 'succes'">
+        <div class="step-num">3</div><span>Commande passée</span>
+      </div>
+    </div>
+
+    <!-- ===== ÉTAPE 1 : PANIER ===== -->
+    <div class="panier-layout" *ngIf="step === 'panier'">
+
+      <!-- Panier vide -->
+      <div class="empty-cart" *ngIf="items.length === 0">
+        <i class="fas fa-shopping-cart"></i>
+        <h2>Votre panier est vide</h2>
+        <p>Ajoutez des produits depuis notre catalogue.</p>
+        <button class="btn-primary" (click)="continuerAchats()">
+          <i class="fas fa-arrow-left"></i> Continuer mes achats
+        </button>
+      </div>
+
+      <ng-container *ngIf="items.length > 0">
+        <!-- Liste articles -->
+        <div class="cart-items">
+          <h2 class="section-title"><i class="fas fa-shopping-cart"></i> Mon Panier ({{ count }} article{{ count > 1 ? 's' : '' }})</h2>
+
+          <div class="cart-item" *ngFor="let item of items">
+            <div class="item-img">
+              <img [src]="item.image" [alt]="item.nom">
+            </div>
+            <div class="item-info">
+              <span class="item-cat">{{ item.categorie }}</span>
+              <h3 class="item-name">{{ item.nom }}</h3>
+              <span class="item-ref">Réf: {{ item.produitId }}</span>
+            </div>
+            <div class="item-qty">
+              <button (click)="modifier(item.produitId, -1)"><i class="fas fa-minus"></i></button>
+              <span>{{ item.quantite }}</span>
+              <button (click)="modifier(item.produitId, 1)"><i class="fas fa-plus"></i></button>
+            </div>
+            <div class="item-price">
+              <span class="unit-price">{{ item.prix | number:'1.2-2' }} TND</span>
+              <span class="total-price">{{ (item.prix * item.quantite) | number:'1.2-2' }} TND</span>
+            </div>
+            <button class="btn-remove" (click)="supprimer(item.produitId)">
+              <i class="fas fa-trash"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Récap commande -->
+        <div class="order-summary">
+          <h3>Récapitulatif</h3>
+          <div class="summary-row" *ngFor="let item of items">
+            <span>{{ item.nom | slice:0:25 }}{{ item.nom.length > 25 ? '...' : '' }} × {{ item.quantite }}</span>
+            <span>{{ (item.prix * item.quantite) | number:'1.2-2' }} TND</span>
+          </div>
+          <div class="summary-divider"></div>
+          <div class="summary-row">
+            <span>Sous-total</span>
+            <span>{{ total | number:'1.2-2' }} TND</span>
+          </div>
+          <div class="summary-row">
+            <span>Livraison</span>
+            <span class="free">Gratuite</span>
+          </div>
+          <div class="summary-total">
+            <span>Total</span>
+            <strong>{{ total | number:'1.2-2' }} TND</strong>
+          </div>
+          <button class="btn-checkout" (click)="allerConfirmation()">
+            <i class="fas fa-lock"></i> Passer la commande
+          </button>
+          <button class="btn-continue" (click)="continuerAchats()">
+            <i class="fas fa-arrow-left"></i> Continuer mes achats
+          </button>
+        </div>
+      </ng-container>
+    </div>
+
+    <!-- ===== ÉTAPE 2 : CONFIRMATION ===== -->
+    <div class="confirmation-layout" *ngIf="step === 'confirmation'">
+      <div class="confirm-card">
+        <h2><i class="fas fa-clipboard-check"></i> Confirmer votre commande</h2>
+        <p class="confirm-sub">Vérifiez vos articles avant de valider.</p>
+
+        <div class="confirm-client">
+          <i class="fas fa-user-circle"></i>
+          <div>
+            <span class="label">Commande pour</span>
+            <strong>{{ userData?.firstName || userData?.sub }}</strong>
+          </div>
+        </div>
+
+        <div class="confirm-items">
+          <div class="confirm-item" *ngFor="let item of items">
+            <img [src]="item.image" [alt]="item.nom">
+            <div class="confirm-item-info">
+              <span class="confirm-item-name">{{ item.nom }}</span>
+              <span class="confirm-item-detail">{{ item.quantite }} × {{ item.prix | number:'1.2-2' }} TND</span>
+            </div>
+            <span class="confirm-item-total">{{ (item.prix * item.quantite) | number:'1.2-2' }} TND</span>
+          </div>
+        </div>
+
+        <div class="confirm-total">
+          <span>Total à payer</span>
+          <strong>{{ total | number:'1.2-2' }} TND</strong>
+        </div>
+
+        <div class="alert-error" *ngIf="errorMsg">
+          <i class="fas fa-exclamation-circle"></i> {{ errorMsg }}
+        </div>
+
+        <div class="confirm-actions">
+          <button class="btn-back" (click)="step = 'panier'">
+            <i class="fas fa-arrow-left"></i> Modifier
+          </button>
+          <button class="btn-confirm" (click)="confirmerCommandes()" [disabled]="loading">
+            <i class="fas fa-check"></i> {{ loading ? 'Traitement...' : 'Confirmer et commander' }}
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== ÉTAPE 3 : SUCCÈS ===== -->
+    <div class="succes-layout" *ngIf="step === 'succes'">
+      <div class="succes-card">
+        <div class="succes-icon"><i class="fas fa-check-circle"></i></div>
+        <h2>Commande confirmée !</h2>
+        <p>Votre commande a été passée avec succès. Vous pouvez suivre son statut dans "Mes Commandes".</p>
+        <div class="succes-actions">
+          <button class="btn-primary" (click)="voirMesCommandes()">
+            <i class="fas fa-box"></i> Voir mes commandes
+          </button>
+          <button class="btn-outline" (click)="continuerAchats()">
+            <i class="fas fa-shopping-bag"></i> Continuer mes achats
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
