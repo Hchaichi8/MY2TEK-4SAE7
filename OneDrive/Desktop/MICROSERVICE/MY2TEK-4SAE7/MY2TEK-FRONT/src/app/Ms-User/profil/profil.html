@@ -1,0 +1,265 @@
+<nav class="navbar">
+  <div class="nav-container">
+    <div class="nav-brand" routerLink="/">MY2<span>TEK</span></div>
+    <div class="nav-search">
+      <input type="text" placeholder="Rechercher un composant, un PC...">
+      <button><i class="fas fa-search"></i></button>
+    </div>
+    <div class="nav-actions">
+      <a class="nav-link" routerLink="/home"><i class="fas fa-home"></i> <span>Accueil</span></a>
+      <a class="nav-link" routerLink="/wishlist"><i class="fas fa-heart"></i> <span class="badge">0</span></a>
+      <a class="nav-link cart-link" routerLink="/cart">
+        <i class="fas fa-shopping-cart"></i>
+        <span class="cart-count">{{ mesCommandes.length }}</span>
+      </a>
+      <div class="user-dropdown">
+        <div class="user-trigger">
+          <div class="avatar-sm">{{ userData?.sub?.charAt(0).toUpperCase() }}</div>
+          <span>Mon Compte</span>
+          <i class="fas fa-chevron-down"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<div class="page-wrapper">
+  <div class="container">
+    <header class="page-header">
+      <h1>Mon Compte</h1>
+      <p>Gérez vos informations et suivez vos commandes MY2TEK.</p>
+    </header>
+
+    <div class="profile-layout">
+      <aside class="profile-nav">
+        <a class="p-nav-item" [class.active]="activeTab === 'info'" (click)="activeTab = 'info'">
+          <i class="fas fa-user"></i> Informations personnelles
+        </a>
+        <a class="p-nav-item" routerLink="/mes-commandes">
+          <i class="fas fa-box"></i> Mes Commandes
+          <span class="nav-badge" *ngIf="mesCommandes.length > 0">{{ mesCommandes.length }}</span>
+        </a>
+        <a class="p-nav-item"><i class="fas fa-map-marker-alt"></i> Mes Adresses</a>
+        <a class="p-nav-item"><i class="fas fa-shield-alt"></i> Sécurité</a>
+        <hr>
+        <button class="btn-logout" (click)="onLogout()">Déconnexion</button>
+      </aside>
+
+      <!-- TAB: Informations personnelles -->
+      <section class="profile-content" *ngIf="activeTab === 'info'">
+        <div class="profile-alert" *ngIf="!userData?.firstName || !userData?.lastName">
+          <div class="alert-icon"><i class="fas fa-exclamation-circle"></i></div>
+          <div class="alert-text">
+            <strong>Profil incomplet !</strong>
+            <p>Veuillez compléter votre nom et prénom pour une meilleure expérience sur MY2TEK.</p>
+          </div>
+          <button class="btn-complete" (click)="openModal()">Compléter</button>
+        </div>
+
+        <div class="content-card">
+          <div class="card-header">
+            <div class="user-identity">
+              <h2 class="full-name">
+                {{ (userData?.firstName || userData?.lastName) ? (userData?.firstName + ' ' + userData?.lastName) : 'Utilisateur MY2TEK' }}
+              </h2>
+              <p class="user-email-sub">{{ userData?.sub }}</p>
+            </div>
+            <button class="edit-link" (click)="openModal()">
+              <i class="fas fa-pen"></i> Modifier
+            </button>
+          </div>
+          <div class="user-info-grid">
+            <div class="info-group">
+              <label>Type de compte</label>
+              <div class="info-value"><span class="role-tag">{{ userData?.role }}</span></div>
+            </div>
+            <div class="info-group">
+              <label>ID Client</label>
+              <div class="info-value">#MY2T-{{ userData?.id }}</div>
+            </div>
+            <div class="info-group">
+              <label>Téléphone</label>
+              <div class="info-value">{{ userData?.phone || 'Non renseigné' }}</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB: Mes Commandes -->
+      <section class="profile-content" *ngIf="activeTab === 'commandes'">
+        <div class="content-card">
+          <div class="card-header">
+            <div>
+              <h2 class="section-title">Mes Commandes</h2>
+              <p class="section-sub">Suivez et gérez vos commandes en cours.</p>
+            </div>
+            <button class="btn-new-commande" (click)="openCommandeModal()">
+              <i class="fas fa-plus"></i> Nouvelle commande
+            </button>
+          </div>
+
+          <!-- Loading -->
+          <div class="loading-state" *ngIf="loadingCommandes">
+            <i class="fas fa-spinner fa-spin"></i> Chargement...
+          </div>
+
+          <!-- Empty state -->
+          <div class="empty-state" *ngIf="!loadingCommandes && mesCommandes.length === 0">
+            <i class="fas fa-box-open"></i>
+            <p>Vous n'avez pas encore de commandes.</p>
+            <button class="btn-primary-tek" (click)="openCommandeModal()">Passer une commande</button>
+          </div>
+
+          <!-- Liste commandes -->
+          <div class="commandes-list" *ngIf="!loadingCommandes && mesCommandes.length > 0">
+            <div class="commande-card" *ngFor="let c of mesCommandes">
+              <div class="commande-header">
+                <div class="commande-id">
+                  <i class="fas fa-receipt"></i>
+                  <span>Commande #{{ c.id }}</span>
+                </div>
+                <span class="statut-badge statut-{{ (c.statut || '') | lowercase }}">
+                  <i class="fas" [ngClass]="{
+                    'fa-clock': c.statut === 'CREATED',
+                    'fa-check-circle': c.statut === 'VALIDATED',
+                    'fa-truck': c.statut === 'SHIPPED',
+                    'fa-box-open': c.statut === 'DELIVERED',
+                    'fa-times-circle': c.statut === 'CANCELLED'
+                  }"></i>
+                  {{ getStatutLabel(c.statut) }}
+                </span>
+              </div>
+              <div class="commande-body">
+                <div class="commande-info-row">
+                  <div class="commande-info-item">
+                    <label>Produit</label>
+                    <span>{{ c.produitId }}</span>
+                  </div>
+                  <div class="commande-info-item">
+                    <label>Quantité</label>
+                    <span>{{ c.quantite }}</span>
+                  </div>
+                  <div class="commande-info-item">
+                    <label>Prix total</label>
+                    <span class="prix">{{ (c.prixSnapshot * c.quantite) | number:'1.2-2' }} TND</span>
+                  </div>
+                  <div class="commande-info-item">
+                    <label>Date</label>
+                    <span>{{ c.createdAt | date:'dd/MM/yyyy' }}</span>
+                  </div>
+                </div>
+
+                <!-- Stepper statut -->
+                <div class="statut-stepper">
+                  <div class="step" [class.done]="isStepDone(c.statut, 'CREATED')" [class.active]="c.statut === 'CREATED'">
+                    <div class="step-dot"></div><span>Créée</span>
+                  </div>
+                  <div class="step-line" [class.done]="isStepDone(c.statut, 'VALIDATED')"></div>
+                  <div class="step" [class.done]="isStepDone(c.statut, 'VALIDATED')" [class.active]="c.statut === 'VALIDATED'">
+                    <div class="step-dot"></div><span>Validée</span>
+                  </div>
+                  <div class="step-line" [class.done]="isStepDone(c.statut, 'SHIPPED')"></div>
+                  <div class="step" [class.done]="isStepDone(c.statut, 'SHIPPED')" [class.active]="c.statut === 'SHIPPED'">
+                    <div class="step-dot"></div><span>Expédiée</span>
+                  </div>
+                  <div class="step-line" [class.done]="isStepDone(c.statut, 'DELIVERED')"></div>
+                  <div class="step" [class.done]="isStepDone(c.statut, 'DELIVERED')" [class.active]="c.statut === 'DELIVERED'">
+                    <div class="step-dot"></div><span>Livrée</span>
+                  </div>
+                </div>
+              </div>
+              <div class="commande-footer" *ngIf="c.statut === 'CREATED'">
+                <button class="btn-annuler" (click)="annulerCommande(c.id)">
+                  <i class="fas fa-times"></i> Annuler
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <!-- Modal Modifier Profil -->
+  <div class="modal-overlay" *ngIf="isModalOpen" (click)="closeModal($event)">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Modifier mes informations</h2>
+        <button class="close-btn" (click)="closeModal()"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="modal-body">
+        <form (ngSubmit)="saveProfile()">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Prénom</label>
+              <input type="text" name="firstName" [(ngModel)]="editData.firstName" placeholder="Votre prénom">
+            </div>
+            <div class="form-group">
+              <label>Nom</label>
+              <input type="text" name="lastName" [(ngModel)]="editData.lastName" placeholder="Votre nom">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Téléphone</label>
+            <input type="tel" name="phone" [(ngModel)]="editData.phone" placeholder="+216 12 345 678">
+          </div>
+          <div class="form-group disabled-group">
+            <label>Email (Non modifiable)</label>
+            <input type="email" [value]="userData?.sub" disabled>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn-cancel" (click)="closeModal()">Annuler</button>
+            <button type="submit" class="btn-save">Enregistrer</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Nouvelle Commande -->
+  <div class="modal-overlay" *ngIf="isCommandeModalOpen" (click)="closeCommandeModal($event)">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2><i class="fas fa-shopping-cart"></i> Nouvelle Commande</h2>
+        <button class="close-btn" (click)="closeCommandeModal()"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="modal-body">
+        <div class="alert-success-msg" *ngIf="commandeSuccess">
+          <i class="fas fa-check-circle"></i> Commande passée avec succès !
+        </div>
+        <div class="alert-error-msg" *ngIf="commandeError">
+          <i class="fas fa-exclamation-circle"></i> {{ commandeError }}
+        </div>
+        <form (ngSubmit)="passerCommande()" *ngIf="!commandeSuccess">
+          <div class="form-group">
+            <label>ID Produit</label>
+            <input type="text" name="produitId" [(ngModel)]="nouvelleCommande.produitId"
+                   required placeholder="ex: PROD-001">
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Quantité</label>
+              <input type="number" name="quantite" [(ngModel)]="nouvelleCommande.quantite"
+                     required min="1">
+            </div>
+            <div class="form-group">
+              <label>Prix unitaire (TND)</label>
+              <input type="number" name="prix" [(ngModel)]="nouvelleCommande.prixSnapshot"
+                     required min="0" step="0.01">
+            </div>
+          </div>
+          <div class="prix-total-preview" *ngIf="nouvelleCommande.quantite && nouvelleCommande.prixSnapshot">
+            <span>Total estimé :</span>
+            <strong>{{ (nouvelleCommande.quantite * nouvelleCommande.prixSnapshot) | number:'1.2-2' }} TND</strong>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn-cancel" (click)="closeCommandeModal()">Annuler</button>
+            <button type="submit" class="btn-save" [disabled]="commandeLoading">
+              {{ commandeLoading ? 'Envoi...' : 'Confirmer la commande' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
