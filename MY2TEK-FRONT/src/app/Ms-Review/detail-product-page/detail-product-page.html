@@ -12,16 +12,8 @@
         <i class="fa-solid fa-cart-shopping"></i>
         <span class="cart-badge">0</span>
       </div>
-
-      <!-- ✅ Loading state — show nothing while Keycloak checks -->
       <div *ngIf="isLoggedIn === null" class="nav-skeleton"></div>
-
-      <!-- Guest -->
-      <div *ngIf="isLoggedIn === false" class="user-pill" routerLink="/login">
-        Connexion
-      </div>
-
-      <!-- Logged in -->
+      <div *ngIf="isLoggedIn === false" class="user-pill" routerLink="/login">Connexion</div>
       <div *ngIf="isLoggedIn === true" class="user-menu">
         <div class="user-pill-logged" routerLink="/Profil">
           <div class="user-avatar-nav">{{ userInitials }}</div>
@@ -31,57 +23,57 @@
     </div>
   </nav>
 
-  <div class="detail-container">
+  <!-- Loading state -->
+  <div *ngIf="isLoadingProduct" class="detail-container loading-state">
+    <p>Chargement du produit...</p>
+  </div>
+
+  <!-- Product not found -->
+  <div *ngIf="!isLoadingProduct && !product" class="detail-container loading-state">
+    <p>Produit introuvable.</p>
+    <button class="btn-add-cart" routerLink="/home">← Retour</button>
+  </div>
+
+  <!-- Real product -->
+  <div class="detail-container" *ngIf="!isLoadingProduct && product">
     <div class="product-main-grid">
 
       <div class="product-gallery">
         <div class="main-image-card">
-          <span class="stock-badge">En Stock</span>
-          <img src="https://files.pccasegear.com/images/1665464763-ROG-STRIX-RTX4090-O24G-GAMING-thb2.jpg" alt="RTX 4090">
-        </div>
-        <div class="thumbnail-list">
-          <div class="thumb active">
-            <img src="https://dlcdnwebimgs.asus.com/gain/77332454-947B-4F8A-8515-51E918E84E43/with_fpro/w1000/h600">
-          </div>
-          <div class="thumb">
-            <img src="https://dlcdnwebimgs.asus.com/gain/2740A395-B357-4C75-8D63-B8B9B1E627B5/w717/h525">
-          </div>
+          <span class="stock-badge" [class.out]="product.stockQuantity === 0">
+            {{ product.stockQuantity > 0 ? 'En Stock' : 'Rupture de stock' }}
+          </span>
+          <img [src]="product.imageUrl || 'https://via.placeholder.com/500x400?text=No+Image'"
+               [alt]="product.name">
         </div>
       </div>
 
       <div class="product-info-panel">
-        <nav class="breadcrumb">Accueil > Composants > Cartes Graphiques</nav>
-        <h1 class="product-title">NVIDIA GeForce RTX 4090 Strix Edition</h1>
+        <nav class="breadcrumb">
+          Accueil > {{ product.category }} > {{ product.brand }}
+        </nav>
+        <h1 class="product-title">{{ product.name }}</h1>
 
         <div class="quick-meta">
-          <div class="stars">
-            <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
-            <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
-            <i class="fa-solid fa-star"></i>
-            <span>(128 avis)</span>
-          </div>
-          <span class="sku">REF: MY2-RTX4090</span>
+          <span class="sku">REF: PRD-{{ product.id }}</span>
+          <span class="sku">Marque: {{ product.brand }}</span>
         </div>
 
         <div class="price-section">
-          <span class="current-price">4,999 TND</span>
-          <span class="old-price">5,499 TND</span>
-          <span class="save-badge">-500 TND</span>
+          <span class="current-price">{{ product.price | number:'1.2-2' }} TND</span>
         </div>
 
-        <p class="product-short-desc">
-          La carte graphique ultime pour les gamers et créateurs. Architecture NVIDIA Ada Lovelace,
-          24 Go de mémoire G6X, et refroidissement Strix optimisé.
-        </p>
+        <p class="product-short-desc">{{ product.description }}</p>
 
         <div class="purchase-zone">
           <div class="qty-selector">
-            <button>-</button>
-            <input type="text" value="1" readonly>
-            <button>+</button>
+            <button (click)="decrementQty()">-</button>
+            <input type="text" [value]="quantity" readonly>
+            <button (click)="incrementQty()">+</button>
           </div>
-          <button class="btn-add-cart">
-            <i class="fa-solid fa-cart-shopping"></i> Ajouter au panier
+          <button class="btn-add-cart" [disabled]="product.stockQuantity === 0">
+            <i class="fa-solid fa-cart-shopping"></i>
+            {{ product.stockQuantity > 0 ? 'Ajouter au panier' : 'Indisponible' }}
           </button>
         </div>
 

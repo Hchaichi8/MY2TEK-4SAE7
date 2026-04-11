@@ -9,6 +9,9 @@ import { Useradmin } from './Ms-User/Admin/useradmin/useradmin';
 import { Dashboard } from './Ms-User/Admin/dashboard/dashboard';
 import { DetailProductPage } from './Ms-Review/detail-product-page/detail-product-page';
 import { HomePage } from './Ms-Review/home-page/home-page';
+import { ProductList } from './Ms-Product/product-list/product-list';
+import { AddProduct } from './Ms-Product/add-product/add-product';
+import { EditProduct } from './Ms-Product/edit-product/edit-product';
 
 const routes: Routes = [
 
@@ -18,14 +21,14 @@ const routes: Routes = [
   { path: 'Profil', component: Profil },
   { path: 'forgot-password', component: ForgotPassword },
   { path: 'reset-password', component: ResetPassword },
-  { path: 'detail-product', component: DetailProductPage },
+  { path: 'detail-product/:id', component: DetailProductPage },
   { path: 'home', component: HomePage },
-  
-
-
+  { path: 'product-list', component: ProductList },
+  { path: 'product-add', component: AddProduct },
+  { path: 'product-edit/:id', component: EditProduct },
 
   { path: 'user-admin', component: Useradmin },
-    { path: 'dashboard-admin', component: Dashboard }
+  { path: 'dashboard-admin', component: Dashboard }
 
   
 ];

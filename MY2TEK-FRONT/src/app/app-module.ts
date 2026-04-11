@@ -26,6 +26,10 @@ import { Dashboard } from './Ms-User/Admin/dashboard/dashboard';
 import { Useradmin } from './Ms-User/Admin/useradmin/useradmin';
 import { HomePage } from './Ms-Review/home-page/home-page';
 import { DetailProductPage } from './Ms-Review/detail-product-page/detail-product-page';
+import { CommonModule } from '@angular/common';
+import { ProductList } from './Ms-Product/product-list/product-list';
+import { AddProduct } from './Ms-Product/add-product/add-product';
+import { EditProduct } from './Ms-Product/edit-product/edit-product';
 
 // 1. Keycloak Initialization Function
 function initializeKeycloak(keycloak: KeycloakService) {
@@ -57,6 +61,9 @@ function initializeKeycloak(keycloak: KeycloakService) {
     Useradmin,
     HomePage,
     DetailProductPage,
+    ProductList,   
+    AddProduct,    
+    EditProduct,
   ],
   imports: [
     BrowserModule,
@@ -66,6 +73,7 @@ function initializeKeycloak(keycloak: KeycloakService) {
     SocialLoginModule,
     GoogleSigninButtonDirective,
     KeycloakAngularModule, 
+    CommonModule,
   ],
   providers: [
     

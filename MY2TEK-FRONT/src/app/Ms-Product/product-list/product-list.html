@@ -1,0 +1,193 @@
+<div class="admin-container">
+    <aside class="sidebar">
+    <div class="sidebar-header">
+      <div class="logo">MY2<span>TEK</span></div>
+      <p class="admin-tag">Console Admin</p>
+    </div>
+    <nav class="sidebar-nav">
+      <a class="nav-link active" routerLink="/dashboard-admin">
+        <i class="fa-solid fa-chart-line"></i> <span>Dashboard</span>
+      </a>
+      <a class="nav-link" routerLink="/user-admin">
+        <i class="fa-solid fa-users-cog"></i> <span>Utilisateurs</span>
+      </a>
+      <a class="nav-link" routerLink="/product-list">
+        <i class="fa-solid fa-laptop-code"></i> <span>Produits</span>
+      </a>
+      <a class="nav-link">
+        <i class="fa-solid fa-receipt"></i> <span>Commandes</span>
+      </a>
+      <div class="nav-divider"></div>
+      <a class="nav-link logout-link" (click)="onLogout()">
+        <i class="fa-solid fa-power-off"></i> <span>Déconnexion</span>
+      </a>
+    </nav>
+  </aside>
+
+  <main class="main-content">
+    <header class="top-bar">
+      <div class="search-wrapper">
+        <i class="fas fa-search"></i>
+        <input type="text" placeholder="Rechercher un produit par nom..."
+               [(ngModel)]="filters.name" (input)="onSearch()">
+      </div>
+      <div class="admin-profile">
+        <button class="btn-add" (click)="goToAdd()">
+          <i class="fas fa-plus"></i> Ajouter un produit
+        </button>
+      </div>
+    </header>
+
+    <div class="content-body">
+
+      <!-- Stats -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon blue"><i class="fas fa-box-open"></i></div>
+          <div class="stat-info">
+            <span class="label">Total Produits</span>
+            <span class="value">{{ totalElements }}</span>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon orange"><i class="fas fa-tags"></i></div>
+          <div class="stat-info">
+            <span class="label">Catégories</span>
+            <span class="value">{{ categories.length }}</span>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon green"><i class="fas fa-trademark"></i></div>
+          <div class="stat-info">
+            <span class="label">Marques</span>
+            <span class="value">{{ brands.length }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Filters -->
+      <div class="filter-card">
+        <div class="filter-row">
+          <div class="filter-group">
+            <label>Catégorie</label>
+            <select [(ngModel)]="filters.category" (change)="onSearch()">
+              <option value="">Toutes</option>
+              <option *ngFor="let c of categories" [value]="c">{{ c }}</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label>Marque</label>
+            <select [(ngModel)]="filters.brand" (change)="onSearch()">
+              <option value="">Toutes</option>
+              <option *ngFor="let b of brands" [value]="b">{{ b }}</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label>Prix min (€)</label>
+            <input type="number" [(ngModel)]="filters.minPrice" placeholder="0" (change)="onSearch()">
+          </div>
+          <div class="filter-group">
+            <label>Prix max (€)</label>
+            <input type="number" [(ngModel)]="filters.maxPrice" placeholder="9999" (change)="onSearch()">
+          </div>
+          <div class="filter-group">
+            <label>En stock</label>
+            <select [(ngModel)]="filters.inStock" (change)="onSearch()">
+              <option [ngValue]="undefined">Tous</option>
+              <option [ngValue]="true">En stock</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label>Trier par</label>
+            <select [(ngModel)]="filters.sort" (change)="onSortChange()">
+              <option value="createdAt,desc">Plus récents</option>
+              <option value="price,asc">Prix croissant</option>
+              <option value="price,desc">Prix décroissant</option>
+              <option value="name,asc">Nom A-Z</option>
+              <option value="name,desc">Nom Z-A</option>
+            </select>
+          </div>
+          <div class="filter-group filter-reset">
+            <button class="btn-reset" (click)="resetFilters()">
+              <i class="fas fa-undo"></i> Réinitialiser
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Table -->
+      <div class="data-card">
+        <div class="card-header">
+          <h3>Liste des produits</h3>
+          <span class="result-count">{{ totalElements }} résultat(s)</span>
+        </div>
+        <div class="table-responsive">
+          <table class="premium-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Image</th>
+                <th>Produit</th>
+                <th>Catégorie</th>
+                <th>Marque</th>
+                <th>Prix</th>
+                <th>Stock</th>
+                <th class="text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let p of products">
+                <td class="id-cell">#PRD-{{ p.id }}</td>
+                <td>
+                  <img [src]="p.imageUrl || 'https://via.placeholder.com/50'" alt="{{ p.name }}" class="product-thumb">
+                </td>
+                <td>
+                  <div class="name-box">
+                    <span class="full-name">{{ p.name }}</span>
+                    <span class="join-date">{{ p.description | slice:0:40 }}...</span>
+                  </div>
+                </td>
+                <td><span class="badge badge-user">{{ p.category }}</span></td>
+                <td>{{ p.brand }}</td>
+                <td class="price-cell">{{ p.price | number:'1.2-2' }} €</td>
+                <td>
+                  <span class="status-indicator" [ngClass]="p.stockQuantity > 0 ? 'online' : 'offline'">
+                    {{ p.stockQuantity > 0 ? p.stockQuantity + ' unités' : 'Rupture' }}
+                  </span>
+                </td>
+                <td class="text-right">
+                  <div class="action-buttons">
+                    <button class="action-btn edit" (click)="goToEdit(p.id)" title="Modifier">
+                      <i class="fas fa-pen"></i>
+                    </button>
+                    <button class="action-btn delete" (click)="deleteProduct(p.id)" title="Supprimer">
+                      <i class="fas fa-trash-alt"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+              <tr *ngIf="products.length === 0">
+                <td colspan="8" class="empty-state">Aucun produit trouvé.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Pagination -->
+        <div class="pagination" *ngIf="totalPages > 1">
+          <button class="page-btn" (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 0">
+            <i class="fas fa-chevron-left"></i>
+          </button>
+          <button class="page-btn" *ngFor="let p of pages"
+                  [class.active]="p === currentPage" (click)="goToPage(p)">
+            {{ p + 1 }}
+          </button>
+          <button class="page-btn" (click)="goToPage(currentPage + 1)" [disabled]="currentPage === totalPages - 1">
+            <i class="fas fa-chevron-right"></i>
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>

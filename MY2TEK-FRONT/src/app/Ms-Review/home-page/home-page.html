@@ -96,83 +96,52 @@
   </section>
 
   <section class="products-section">
-    <div class="section-header">
-      <div class="title-group">
-        <h2>Produits Vedettes</h2>
-        <div class="underline"></div>
+  <div class="section-header">
+    <div class="title-group">
+      <h2>Produits Vedettes</h2>
+      <div class="underline"></div>
+    </div>
+    <a href="#" class="view-all">Tout explorer <i class="fa-solid fa-arrow-right"></i></a>
+  </div>
+
+  <!-- Loading skeleton -->
+  <div class="product-grid" *ngIf="isLoadingProducts">
+    <div class="product-card skeleton-card" *ngFor="let i of [1,2,3]">
+      <div class="product-img skeleton-img"></div>
+      <div class="product-info">
+        <div class="skeleton-line short"></div>
+        <div class="skeleton-line"></div>
+        <div class="skeleton-line short"></div>
       </div>
-      <a href="#" class="view-all">Tout explorer <i class="fa-solid fa-arrow-right"></i></a>
+    </div>
+  </div>
+
+  <!-- Real products -->
+  <div class="product-grid" *ngIf="!isLoadingProducts">
+
+    <div *ngIf="products.length === 0" class="empty-products">
+      Aucun produit disponible pour le moment.
     </div>
 
-    <div class="product-grid">
-      <div class="product-card" routerLink="/detail-product">
-        <div class="product-img">
-          <img src="https://files.pccasegear.com/images/1665464763-ROG-STRIX-RTX4090-O24G-GAMING-thb2.jpg" alt="RTX 4090">
-          <span class="tag">Flagship</span>
-        </div>
-        <div class="product-info">
-          <span class="category-name">ASUS ROG</span>
-          <h3>RTX 4090 Strix Edition</h3>
-          <div class="rating">
-            <div class="stars">
-              <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
-              <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
-              <i class="fa-solid fa-star"></i>
-            </div>
-            <span>(128 avis)</span>
-          </div>
-          <div class="card-footer">
-            <p class="price">4,999 <span>TND</span></p>
-            <button class="add-to-cart"><i class="fa-solid fa-plus"></i></button>
-          </div>
-        </div>
+    <div class="product-card" *ngFor="let p of products" (click)="goToDetail(p.id)">
+      <div class="product-img">
+        <img [src]="p.imageUrl || 'https://via.placeholder.com/300x200?text=No+Image'" [alt]="p.name">
+        <span class="tag" *ngIf="p.stockQuantity > 0">En stock</span>
+        <span class="tag red" *ngIf="p.stockQuantity === 0">Rupture</span>
       </div>
-
-      <div class="product-card">
-        <div class="product-img">
-          <img src="https://file1.hkepc.net/2023/02/source/24202242-6b03f190af726e006a5b82b.jpg" alt="Ryzen 9">
-          <span class="tag red">Promo</span>
-        </div>
-        <div class="product-info">
-          <span class="category-name">AMD Ryzen</span>
-          <h3>AMD Ryzen 9 7950X3D</h3>
-          <div class="rating">
-            <div class="stars">
-              <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
-              <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
-              <i class="fa-solid fa-star-half-stroke"></i>
-            </div>
-            <span>(84 avis)</span>
-          </div>
-          <div class="card-footer">
-            <p class="price">2,450 <span>TND</span></p>
-            <button class="add-to-cart"><i class="fa-solid fa-plus"></i></button>
-          </div>
-        </div>
-      </div>
-
-      <div class="product-card">
-        <div class="product-img">
-          <img src="https://tse4.mm.bing.net/th/id/OIP.2CndQezDqwRuyrGyR1N1YQHaHa?w=1000&h=1000&rs=1&pid=ImgDetMain&o=7&rm=3" alt="RAM">
-          <span class="tag">DDR5</span>
-        </div>
-        <div class="product-info">
-          <span class="category-name">Corsair</span>
-          <h3>Dominator Platinum 64GB</h3>
-          <div class="rating">
-            <div class="stars">
-              <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
-              <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
-              <i class="fa-solid fa-star"></i>
-            </div>
-            <span>(42 avis)</span>
-          </div>
-          <div class="card-footer">
-            <p class="price">1,150 <span>TND</span></p>
-            <button class="add-to-cart"><i class="fa-solid fa-plus"></i></button>
-          </div>
+      <div class="product-info">
+        <span class="category-name">{{ p.brand }}</span>
+        <h3>{{ p.name }}</h3>
+        <p class="product-desc">{{ p.description | slice:0:60 }}...</p>
+        <div class="card-footer">
+          <p class="price">{{ p.price | number:'1.2-2' }} <span>TND</span></p>
+          <button class="add-to-cart" (click)="$event.stopPropagation()">
+            <i class="fa-solid fa-plus"></i>
+          </button>
         </div>
       </div>
     </div>
-  </section>
+
+  </div>
+</section>
 </div>

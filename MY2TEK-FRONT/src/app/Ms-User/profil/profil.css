@@ -446,6 +446,7 @@
   font-weight: 600;
   margin-top: 20px;
   cursor: pointer;
+<<<<<<< HEAD
 }/* Tab reviews badge */
 .review-badge {
   background: #6366f1;
@@ -579,4 +580,6 @@
   display: flex;
   align-items: center;
   margin-top: 6px;
+=======
+>>>>>>> origin/hazem-branch
 }
