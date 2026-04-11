@@ -1,0 +1,115 @@
+<div class="admin-container">
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div class="logo">MY2<span>TEK</span></div>
+      <p class="admin-tag">Console Admin</p>
+    </div>
+
+    <nav class="sidebar-nav"> 
+        <a class="nav-link " routerLink="/dashboard-admin">
+        <i class="fa-solid fa-chart-line"></i> <span>Dashboard</span>
+      </a>
+      <a class="nav-link active"routerLink="/user-admin">
+        <i class="fas fa-users-cog"></i> <span>Utilisateurs</span>
+      </a>
+      <a class="nav-link" routerLink="/product-list">
+        <i class="fas fa-laptop-code"></i> <span>Produits</span>
+      </a>
+      <a class="nav-link">
+        <i class="fas fa-receipt"></i> <span>Commandes</span>
+      </a>
+      <div class="nav-divider"></div>
+      <a class="nav-link logout-link" (click)="onLogout()">
+        <i class="fas fa-power-off"></i> <span>Déconnexion</span>
+      </a>
+    </nav>
+  </aside>
+
+  <main class="main-content">
+    <header class="top-bar">
+      <div class="search-wrapper">
+        <i class="fas fa-search"></i>
+        <input type="text" placeholder="Rechercher un membre par email ou ID...">
+      </div>
+      <div class="admin-profile">
+        <span class="welcome">Hello, <strong>Admin</strong></span>
+        <div class="avatar-admin">A</div>
+      </div>
+    </header>
+
+    <div class="content-body">
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon blue"><i class="fas fa-user-friends"></i></div>
+          <div class="stat-info">
+            <span class="label">Total Utilisateurs</span>
+            <span class="value">{{ users.length }}</span>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon orange"><i class="fas fa-user-shield"></i></div>
+          <div class="stat-info">
+            <span class="label">Administrateurs</span>
+            <span class="value">1</span>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon green"><i class="fas fa-calendar-check"></i></div>
+          <div class="stat-info">
+            <span class="label">Nouveaux (24h)</span>
+            <span class="value">0</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="data-card">
+        <div class="card-header">
+          <h3>Liste des membres</h3>
+          <button class="btn-export"><i class="fas fa-file-export"></i> Exporter</button>
+        </div>
+
+        <div class="table-responsive">
+          <table class="premium-table">
+            <thead>
+              <tr>
+                <th>ID Client</th>
+                <th>Membre</th>
+                <th>Email</th>
+                <th>Rôle</th>
+                <th>Statut</th>
+                <th class="text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let u of users">
+                <td class="id-cell">#MY2T-{{u.id}}</td>
+                <td>
+                  <div class="user-info">
+                    <div class="avatar-circle">{{ u.firstName?.charAt(0) }}</div>
+                    <div class="name-box">
+                      <span class="full-name">{{ u.firstName }} {{ u.lastName }}</span>
+                      <span class="join-date">Inscrit le {{ u.createdAt | date:'dd MMM yyyy' }}</span>
+                    </div>
+                  </div>
+                </td>
+                <td>{{ u.email }}</td>
+                <td>
+                  <span class="badge" [ngClass]="u.role === 'ADMIN' ? 'badge-admin' : 'badge-user'">
+                    {{ u.role }}
+                  </span>
+                </td>
+                <td><span class="status-indicator online">Actif</span></td>
+                <td class="text-right">
+                  <div class="action-buttons">
+                    <button class="action-btn edit" title="Modifier"><i class="fas fa-pen"></i></button>
+                    <button class="action-btn delete" (click)="deleteUser(u.id)" title="Supprimer"><i class="fas fa-trash-alt"></i></button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
