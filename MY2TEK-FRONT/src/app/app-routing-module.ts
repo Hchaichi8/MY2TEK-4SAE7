@@ -12,6 +12,11 @@ import { HomePage } from './Ms-Review/home-page/home-page';
 import { ProductList } from './Ms-Product/product-list/product-list';
 import { AddProduct } from './Ms-Product/add-product/add-product';
 import { EditProduct } from './Ms-Product/edit-product/edit-product';
+import { CommandesList } from './Ms-Commandes/commandes-list/commandes-list';
+import { CreerCommande } from './Ms-Commandes/creer-commande/creer-commande';
+import { MesCommandes } from './Ms-Commandes/mes-commandes/mes-commandes';
+import { AdminCommandes } from './Ms-Commandes/admin-commandes/admin-commandes';
+import { Panier } from './Ms-Commandes/panier/panier';
 
 const routes: Routes = [
 
@@ -26,9 +31,15 @@ const routes: Routes = [
   { path: 'product-list', component: ProductList },
   { path: 'product-add', component: AddProduct },
   { path: 'product-edit/:id', component: EditProduct },
+  { path: 'panier', component: Panier },
+  { path: 'commandes', component: CommandesList },
+  { path: 'commandes/creer', component: CreerCommande },
+  { path: 'mes-commandes', component: MesCommandes },
+  { path: 'admin/commandes', component: AdminCommandes },
 
   { path: 'user-admin', component: Useradmin },
   { path: 'dashboard-admin', component: Dashboard }
+
 
   
 ];

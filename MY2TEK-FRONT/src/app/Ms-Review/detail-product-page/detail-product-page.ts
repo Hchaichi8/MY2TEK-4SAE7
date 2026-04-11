@@ -3,6 +3,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { KeycloakService } from 'keycloak-angular';
 import { KeycloakProfile } from 'keycloak-js';
 import { ActivatedRoute, Router } from '@angular/router';
+import { PanierService } from '../../Ms-Commandes/service/panier.service'; // adjust path
 
 @Component({
   selector: 'app-detail-product-page',
@@ -15,6 +16,7 @@ export class DetailProductPage implements OnInit {
   productId: string = '';
   product: any = null;
   isLoadingProduct = true;
+  addedToCart = false;  // ← for feedback animation
 
   clientId: string = '';
   isLoggedIn: boolean | null = null;
@@ -23,12 +25,10 @@ export class DetailProductPage implements OnInit {
   userDisplayName = '';
 
   newReview = { description: '', rating: 5, productId: '', clientId: '', clientName: '' };
-
   reviews: any[] = [];
   isEnhancing = false;
   showForm = false;
   isSubmitting = false;
-
   quantity = 1;
 
   private readonly GATEWAY = 'http://localhost:8085';
@@ -39,15 +39,13 @@ export class DetailProductPage implements OnInit {
     private keycloakService: KeycloakService,
     private cdr: ChangeDetectorRef,
     private router: Router,
-    private route: ActivatedRoute   // ← inject ActivatedRoute
+    private route: ActivatedRoute,
+    private panierService: PanierService  // ← inject
   ) {}
 
   async ngOnInit() {
-    // Get product ID from route: /detail-product/3
     this.productId = this.route.snapshot.paramMap.get('id') ?? '';
     this.newReview.productId = this.productId;
-
-    // Load everything in parallel
     this.loadProduct();
     this.loadReviews();
     await this.loadUserFromKeycloak();
@@ -56,23 +54,43 @@ export class DetailProductPage implements OnInit {
   loadProduct() {
     this.isLoadingProduct = true;
     this.http.get<any>(`${this.PRODUCT_API}/${this.productId}`).subscribe({
-      next: (data) => {
-        this.product = data;
-        this.isLoadingProduct = false;
-        this.cdr.detectChanges();
-      },
-      error: (err) => {
-        console.error('Failed to load product:', err);
-        this.isLoadingProduct = false;
-        this.cdr.detectChanges();
-      }
+      next: (data) => { this.product = data; this.isLoadingProduct = false; this.cdr.detectChanges(); },
+      error: () => { this.isLoadingProduct = false; this.cdr.detectChanges(); }
     });
   }
 
-  incrementQty() { this.quantity++; }
+  // ── Cart ────────────────────────────────────────────────────────────────────
+
+ ajouterAuPanier() {
+  if (!this.product || this.product.stockQuantity === 0) return;
+
+  this.panierService.ajouter(
+    {
+      produitId: String(this.product.id),
+      nom:       this.product.name,
+      prix:      this.product.price,
+      image:     this.product.imageUrl || '',
+      categorie: this.product.category || ''
+      
+    },
+    this.quantity 
+  );
+
+  this.addedToCart = true;
+  setTimeout(() => { this.addedToCart = false; this.cdr.detectChanges(); }, 2000);
+  this.cdr.detectChanges();
+}
+
+  get cartCount(): number { return this.panierService.count; }
+
+  goToPanier() { this.router.navigate(['/panier']); }
+
+  incrementQty() {
+    if (this.product && this.quantity < this.product.stockQuantity) this.quantity++;
+  }
   decrementQty() { if (this.quantity > 1) this.quantity--; }
 
-  // ── keep all your existing methods below unchanged ──────────────────────────
+  // ── Auth (unchanged) ────────────────────────────────────────────────────────
 
   private getToken(): string {
     const session = sessionStorage.getItem('kc_token');
@@ -81,8 +99,7 @@ export class DetailProductPage implements OnInit {
   }
 
   private getHeaders(): HttpHeaders {
-    const token = this.getToken();
-    return new HttpHeaders({ Authorization: `Bearer ${token}` });
+    return new HttpHeaders({ Authorization: `Bearer ${this.getToken()}` });
   }
 
   async loadUserFromKeycloak() {
@@ -95,16 +112,16 @@ export class DetailProductPage implements OnInit {
         this.userData   = await this.keycloakService.loadUserProfile();
       } else if (sessionToken) {
         this.isLoggedIn = true;
-        const kc        = this.keycloakService.getKeycloakInstance();
+        const kc = this.keycloakService.getKeycloakInstance();
         if (!kc.authenticated) {
           kc.token = sessionToken; kc.authenticated = true;
           kc.tokenParsed = this.parseJwt(sessionToken);
           const refresh = sessionStorage.getItem('kc_refresh_token');
           const idTok   = sessionStorage.getItem('kc_id_token');
           if (refresh) { kc.refreshToken = refresh; kc.refreshTokenParsed = this.parseJwt(refresh); }
-          if (idTok)   { kc.idToken = idTok;        kc.idTokenParsed      = this.parseJwt(idTok); }
+          if (idTok)   { kc.idToken = idTok; kc.idTokenParsed = this.parseJwt(idTok); }
         }
-        const parsed  = kc.tokenParsed as any;
+        const parsed = kc.tokenParsed as any;
         this.userData = {
           id: parsed?.sub ?? '', username: parsed?.preferred_username ?? '',
           email: parsed?.email ?? '', firstName: parsed?.given_name ?? '',
@@ -129,7 +146,7 @@ export class DetailProductPage implements OnInit {
       this.newReview.clientId   = this.clientId;
       this.newReview.clientName = this.userDisplayName;
       this.cdr.detectChanges();
-    } catch (err) {
+    } catch {
       this.isLoggedIn = false;
       this.cdr.detectChanges();
     }
@@ -189,10 +206,7 @@ export class DetailProductPage implements OnInit {
 
   loadReviews() {
     this.http.get<any[]>(`${this.GATEWAY}/Review/GetAllReview`).subscribe({
-      next: (data) => {
-        this.reviews = data.filter(r => String(r.productId) === this.productId);
-        this.cdr.detectChanges();
-      },
+      next: (data) => { this.reviews = data.filter(r => String(r.productId) === this.productId); this.cdr.detectChanges(); },
       error: (err) => console.error('Load reviews error:', err)
     });
   }

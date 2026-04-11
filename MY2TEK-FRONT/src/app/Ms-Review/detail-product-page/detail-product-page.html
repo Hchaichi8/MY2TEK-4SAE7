@@ -8,10 +8,10 @@
     </div>
     <div class="nav-icons">
       <i class="fa-solid fa-magnifying-glass"></i>
-      <div class="cart-wrapper">
-        <i class="fa-solid fa-cart-shopping"></i>
-        <span class="cart-badge">0</span>
-      </div>
+      <div class="cart-wrapper" (click)="goToPanier()" style="cursor:pointer; position:relative;">
+  <i class="fa-solid fa-cart-shopping"></i>
+  <span class="cart-badge" *ngIf="cartCount > 0">{{ cartCount }}</span>
+</div>
       <div *ngIf="isLoggedIn === null" class="nav-skeleton"></div>
       <div *ngIf="isLoggedIn === false" class="user-pill" routerLink="/login">Connexion</div>
       <div *ngIf="isLoggedIn === true" class="user-menu">
@@ -66,16 +66,18 @@
         <p class="product-short-desc">{{ product.description }}</p>
 
         <div class="purchase-zone">
-          <div class="qty-selector">
-            <button (click)="decrementQty()">-</button>
-            <input type="text" [value]="quantity" readonly>
-            <button (click)="incrementQty()">+</button>
-          </div>
-          <button class="btn-add-cart" [disabled]="product.stockQuantity === 0">
-            <i class="fa-solid fa-cart-shopping"></i>
-            {{ product.stockQuantity > 0 ? 'Ajouter au panier' : 'Indisponible' }}
-          </button>
-        </div>
+  <div class="qty-selector">
+    <button (click)="decrementQty()">-</button>
+    <input type="text" [value]="quantity" readonly>
+    <button (click)="incrementQty()">+</button>
+  </div>
+  <button class="btn-add-cart"
+          [disabled]="product.stockQuantity === 0 || addedToCart"
+          (click)="ajouterAuPanier()">
+    <i class="fa-solid" [class.fa-cart-shopping]="!addedToCart" [class.fa-check]="addedToCart"></i>
+    {{ addedToCart ? 'Ajouté !' : product.stockQuantity > 0 ? 'Ajouter au panier' : 'Indisponible' }}
+  </button>
+</div>
 
         <div class="trust-badges">
           <div class="badge"><i class="fa-solid fa-truck-fast"></i> Livraison 24/48h</div>

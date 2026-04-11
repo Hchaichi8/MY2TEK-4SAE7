@@ -22,7 +22,7 @@
         </processorPath>
         <module name="MS_CompetenceAndReview" />
       </profile>
-      <profile name="Annotation profile for Product-MS" enabled="true">
+      <profile name="Annotation profile for MS_Commandes" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
@@ -30,11 +30,13 @@
           <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/unknown/lombok-unknown.jar" />
         </processorPath>
         <module name="Product-MS" />
+        <module name="MS_Commandes" />
       </profile>
     </annotationProcessing>
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
+      <module name="MS_Commandes" options="-parameters" />
       <module name="MS_CompetenceAndReview" options="-parameters" />
       <module name="Product-MS" options="-parameters" />
       <module name="UserMicroService" options="-parameters" />

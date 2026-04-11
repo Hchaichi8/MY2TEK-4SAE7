@@ -1,0 +1,336 @@
+<!-- NAVBAR -->
+<nav class="navbar">
+  <div class="nav-inner">
+    <div class="brand" routerLink="/home">MY2<span>TEK</span></div>
+    <div class="nav-search">
+      <i class="fas fa-search"></i>
+      <input type="text" placeholder="Rechercher une commande..." [(ngModel)]="searchTerm" (input)="applyFilter()">
+    </div>
+    <div class="nav-right">
+      <a routerLink="/home" class="nav-icon-btn"><i class="fas fa-home"></i></a>
+      <a routerLink="/panier" class="nav-icon-btn cart-btn">
+        <i class="fas fa-shopping-cart"></i>
+      </a>
+      <div class="user-avatar-btn" routerLink="/Profil">
+        {{ userData?.firstName?.charAt(0) || userData?.sub?.charAt(0) | uppercase }}
+      </div>
+      <button class="btn-logout-sm" (click)="onLogout()"><i class="fas fa-sign-out-alt"></i></button>
+    </div>
+  </div>
+</nav>
+
+<div class="page">
+  <div class="container">
+
+    <!-- PAGE HEADER -->
+    <div class="page-header">
+      <div class="header-left">
+        <h1>Mes Commandes</h1>
+        <p>Bonjour <strong>{{ userData?.firstName || userData?.sub }}</strong>, retrouvez toutes vos commandes ici.</p>
+      </div>
+      <button class="btn-new-order" (click)="openNouvelleCommande()">
+        <i class="fas fa-plus"></i> Nouvelle commande
+      </button>
+    </div>
+
+    <!-- STATS STRIP -->
+    <div class="stats-strip">
+      <div class="stat-pill">
+        <span class="stat-num">{{ commandes.length }}</span>
+        <span class="stat-txt">Total</span>
+      </div>
+     <div class="stat-pill orange">
+  <span class="stat-num">{{ countByStatut('CREATED') }}</span>
+  <span class="stat-txt">En attente</span>
+</div>
+<div class="stat-pill blue">
+  <span class="stat-num">{{ countByStatut('VALIDATED') }}</span>
+  <span class="stat-txt">Validées</span>
+</div>
+<div class="stat-pill teal">
+  <span class="stat-num">{{ countByStatut('SHIPPED') }}</span>
+  <span class="stat-txt">Expédiées</span>
+</div>
+<div class="stat-pill green">
+  <span class="stat-num">{{ countByStatut('DELIVERED') }}</span>
+  <span class="stat-txt">Livrées</span>
+</div>
+      <div class="stat-pill blue">
+        <span class="stat-num">{{ commandes  }}</span>
+        <span class="stat-txt">Validées</span>
+      </div>
+      <div class="stat-pill teal">
+        <span class="stat-num">{{ commandes }}</span>
+        <span class="stat-txt">Expédiées</span>
+      </div>
+      <div class="stat-pill green">
+        <span class="stat-num">{{ commandes  }}</span>
+        <span class="stat-txt">Livrées</span>
+      </div>
+      <div class="stat-pill purple">
+        <span class="stat-num">{{ totalDepense | number:'1.0-0' }} TND</span>
+        <span class="stat-txt">Total dépensé</span>
+      </div>
+    </div>
+
+    <!-- FILTER TABS -->
+    <div class="filter-tabs">
+      <button class="ftab" [class.active]="filterStatut === ''" (click)="filterStatut = ''; applyFilter()">Toutes</button>
+      <button class="ftab" [class.active]="filterStatut === 'CREATED'" (click)="filterStatut = 'CREATED'; applyFilter()">
+        <span class="dot orange"></span> En attente
+      </button>
+      <button class="ftab" [class.active]="filterStatut === 'VALIDATED'" (click)="filterStatut = 'VALIDATED'; applyFilter()">
+        <span class="dot blue"></span> Validées
+      </button>
+      <button class="ftab" [class.active]="filterStatut === 'SHIPPED'" (click)="filterStatut = 'SHIPPED'; applyFilter()">
+        <span class="dot teal"></span> Expédiées
+      </button>
+      <button class="ftab" [class.active]="filterStatut === 'DELIVERED'" (click)="filterStatut = 'DELIVERED'; applyFilter()">
+        <span class="dot green"></span> Livrées
+      </button>
+      <button class="ftab" [class.active]="filterStatut === 'CANCELLED'" (click)="filterStatut = 'CANCELLED'; applyFilter()">
+        <span class="dot red"></span> Annulées
+      </button>
+    </div>
+
+    <!-- LOADING -->
+    <div class="loading-state" *ngIf="loading">
+      <div class="spinner"></div>
+      <p>Chargement de vos commandes...</p>
+    </div>
+
+    <!-- EMPTY -->
+    <div class="empty-state" *ngIf="!loading && filtered.length === 0">
+      <div class="empty-icon"><i class="fas fa-box-open"></i></div>
+      <h3>Aucune commande trouvée</h3>
+      <p>{{ commandes.length === 0 ? 'Vous n\'avez pas encore passé de commande.' : 'Aucun résultat pour ce filtre.' }}</p>
+      <button class="btn-new-order" (click)="openNouvelleCommande()">
+        <i class="fas fa-plus"></i> Passer une commande
+      </button>
+    </div>
+
+    <!-- GRID COMMANDES -->
+    <div class="orders-grid" *ngIf="!loading && filtered.length > 0">
+      <div class="order-card" *ngFor="let c of filtered" (click)="voirDetail(c)">
+
+        <!-- IMAGE PRODUIT -->
+        <div class="card-img-wrap">
+          <img [src]="getProductImage(c.produitId)" [alt]="c.produitId" class="card-img">
+          <span class="card-statut-badge badge-{{ (c.statut || '') | lowercase }}">
+            {{ getStatutLabel(c.statut) }}
+          </span>
+          <span class="card-id-tag">#{{ c.id }}</span>
+        </div>
+
+        <!-- INFOS -->
+        <div class="card-body">
+          <div class="card-category">{{ getProductCategory(c.produitId) }}</div>
+          <h3 class="card-product-name">{{ getProductName(c.produitId) }}</h3>
+          <div class="card-ref">Réf: {{ c.produitId }}</div>
+
+          <div class="card-meta-row">
+            <div class="card-meta-item">
+              <i class="fas fa-sort-numeric-up"></i>
+              <span>Qté: <strong>{{ c.quantite }}</strong></span>
+            </div>
+            <div class="card-meta-item">
+              <i class="fas fa-calendar"></i>
+              <span>{{ c.createdAt | date:'dd/MM/yyyy' }}</span>
+            </div>
+          </div>
+
+          <div class="card-price-row">
+            <span class="unit-price">{{ c.prixSnapshot | number:'1.2-2' }} TND / unité</span>
+            <span class="total-price">{{ (c.prixSnapshot * c.quantite) | number:'1.2-2' }} TND</span>
+          </div>
+
+          <!-- MINI STEPPER -->
+          <div class="mini-stepper" *ngIf="c.statut !== 'CANCELLED'">
+            <div class="ms" [class.done]="isStepDone(c.statut, 'CREATED')"><div class="md"></div></div>
+            <div class="ml" [class.done]="isStepDone(c.statut, 'VALIDATED')"></div>
+            <div class="ms" [class.done]="isStepDone(c.statut, 'VALIDATED')"><div class="md"></div></div>
+            <div class="ml" [class.done]="isStepDone(c.statut, 'SHIPPED')"></div>
+            <div class="ms" [class.done]="isStepDone(c.statut, 'SHIPPED')"><div class="md"></div></div>
+            <div class="ml" [class.done]="isStepDone(c.statut, 'DELIVERED')"></div>
+            <div class="ms" [class.done]="isStepDone(c.statut, 'DELIVERED')"><div class="md"></div></div>
+          </div>
+          <div class="cancelled-tag" *ngIf="c.statut === 'CANCELLED'">
+            <i class="fas fa-times-circle"></i> Annulée
+          </div>
+        </div>
+
+        <!-- FOOTER -->
+        <div class="card-footer" (click)="$event.stopPropagation()">
+          <button class="btn-detail" (click)="voirDetail(c)">
+            <i class="fas fa-eye"></i> Détails
+          </button>
+          
+          <button class="btn-annuler-card" *ngIf="c.statut === 'CREATED'" (click)="annuler(c.id)">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ===== MODAL DÉTAIL ===== -->
+<div class="modal-overlay" *ngIf="selectedCommande" (click)="fermerDetail()">
+  <div class="modal-box" (click)="$event.stopPropagation()">
+    <div class="modal-head">
+      <div class="modal-title">
+        <img [src]="getProductImage(selectedCommande.produitId)" class="modal-img">
+        <div>
+          <h3>{{ getProductName(selectedCommande.produitId) }}</h3>
+          <span class="modal-ref">Réf: {{ selectedCommande.produitId }} · Commande #{{ selectedCommande.id }}</span>
+        </div>
+      </div>
+      <button class="close-btn" (click)="fermerDetail()"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-statut-row">
+        <span class="badge-lg badge-{{ (selectedCommande.statut || '') | lowercase }}">
+          {{ getStatutLabel(selectedCommande.statut) }}
+        </span>
+        <span class="modal-date">{{ selectedCommande.createdAt | date:'dd MMMM yyyy' }}</span>
+      </div>
+
+      <!-- STEPPER MODAL -->
+      <div class="stepper-full" *ngIf="selectedCommande.statut !== 'CANCELLED'">
+        <div class="sf-step" [class.done]="isStepDone(selectedCommande.statut, 'CREATED')">
+          <div class="sf-dot"><i class="fas fa-file-alt"></i></div>
+          <span>Créée</span>
+        </div>
+        <div class="sf-line" [class.done]="isStepDone(selectedCommande.statut, 'VALIDATED')"></div>
+        <div class="sf-step" [class.done]="isStepDone(selectedCommande.statut, 'VALIDATED')">
+          <div class="sf-dot"><i class="fas fa-check"></i></div>
+          <span>Validée</span>
+        </div>
+        <div class="sf-line" [class.done]="isStepDone(selectedCommande.statut, 'SHIPPED')"></div>
+        <div class="sf-step" [class.done]="isStepDone(selectedCommande.statut, 'SHIPPED')">
+          <div class="sf-dot"><i class="fas fa-truck"></i></div>
+          <span>Expédiée</span>
+        </div>
+        <div class="sf-line" [class.done]="isStepDone(selectedCommande.statut, 'DELIVERED')"></div>
+        <div class="sf-step" [class.done]="isStepDone(selectedCommande.statut, 'DELIVERED')">
+          <div class="sf-dot"><i class="fas fa-box-open"></i></div>
+          <span>Livrée</span>
+        </div>
+      </div>
+
+      <div class="modal-details-grid">
+        <div class="md-item"><label>Quantité</label><span>{{ selectedCommande.quantite }}</span></div>
+        <div class="md-item"><label>Prix unitaire</label><span>{{ selectedCommande.prixSnapshot | number:'1.2-2' }} TND</span></div>
+        <div class="md-item"><label>Total</label><span class="price-accent">{{ (selectedCommande.prixSnapshot * selectedCommande.quantite) | number:'1.2-2' }} TND</span></div>
+        <div class="md-item"><label>Client</label><span>{{ selectedCommande.clientId }}</span></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-annuler-modal" *ngIf="selectedCommande.statut === 'CREATED'"
+              (click)="annuler(selectedCommande.id); fermerDetail()">
+        <i class="fas fa-times"></i> Annuler la commande
+      </button>
+      <button class="btn-close-modal" (click)="fermerDetail()">Fermer</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODAL MODIFICATION COMMANDE ===== -->
+<div class="modal-overlay" *ngIf="commandeEnModification" (click)="fermerModification()">
+  <div class="modal-box modal-form" (click)="$event.stopPropagation()">
+    <div class="modal-head">
+      <h3><i class="fas fa-pen"></i> Modifier la commande #{{ commandeEnModification.id }}</h3>
+      <button class="close-btn" (click)="fermerModification()"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="alert-success-msg" *ngIf="modifSuccess"><i class="fas fa-check-circle"></i> Commande modifiée avec succès !</div>
+      <div class="alert-error-msg" *ngIf="modifError"><i class="fas fa-exclamation-circle"></i> {{ modifError }}</div>
+
+      <div class="product-preview" *ngIf="!modifSuccess">
+        <img [src]="getProductImage(commandeEnModification.produitId)" class="preview-img">
+        <div>
+          <div class="card-cat">{{ getProductCategory(commandeEnModification.produitId) }}</div>
+          <div class="card-product-name">{{ getProductName(commandeEnModification.produitId) }}</div>
+        </div>
+      </div>
+
+      <form (ngSubmit)="sauvegarderModification()" #mf="ngForm" *ngIf="!modifSuccess">
+        <div class="form-group">
+          <label><i class="fas fa-box"></i> Référence produit</label>
+          <select name="produitId" [(ngModel)]="commandeEnModification.produitId" class="form-select">
+            <option value="MY2-RTX4090">NVIDIA GeForce RTX 4090 Strix — 4,999 TND</option>
+            <option value="MY2-R9-7950">AMD Ryzen 9 7950X3D — 2,450 TND</option>
+            <option value="MY2-RAM-64">Corsair Dominator 64GB DDR5 — 1,150 TND</option>
+          </select>
+        </div>
+        <div class="form-row-2">
+          <div class="form-group">
+            <label><i class="fas fa-sort-numeric-up"></i> Quantité</label>
+            <input type="number" name="quantite" [(ngModel)]="commandeEnModification.quantite" required min="1">
+          </div>
+          <div class="form-group">
+            <label><i class="fas fa-tag"></i> Prix unitaire (TND)</label>
+            <input type="number" name="prix" [(ngModel)]="commandeEnModification.prixSnapshot" required min="0.01" step="0.01">
+          </div>
+        </div>
+        <div class="recap-box" *ngIf="commandeEnModification.quantite > 0 && commandeEnModification.prixSnapshot > 0">
+          <div class="recap-row">
+            <span>Nouveau total</span>
+            <strong>{{ (commandeEnModification.quantite * commandeEnModification.prixSnapshot) | number:'1.2-2' }} TND</strong>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-close-modal" (click)="fermerModification()">Annuler</button>
+          <button type="submit" class="btn-confirm-modal" [disabled]="mf.invalid || modifLoading">
+            <i class="fas fa-save"></i> {{ modifLoading ? 'Sauvegarde...' : 'Enregistrer' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODAL NOUVELLE COMMANDE ===== -->
+<div class="modal-overlay" *ngIf="activeTab === 'nouvelle'" (click)="closeNouvelleCommande($event)">
+  <div class="modal-box modal-form" (click)="$event.stopPropagation()">
+    <div class="modal-head">
+      <h3><i class="fas fa-shopping-cart"></i> Nouvelle Commande</h3>
+      <button class="close-btn" (click)="activeTab = 'liste'"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="alert-success-msg" *ngIf="successMsg"><i class="fas fa-check-circle"></i> {{ successMsg }}</div>
+      <div class="alert-error-msg" *ngIf="errorMsg"><i class="fas fa-exclamation-circle"></i> {{ errorMsg }}</div>
+
+      <form (ngSubmit)="passerCommande()" #f="ngForm" *ngIf="!successMsg">
+        <div class="form-group">
+          <label><i class="fas fa-user"></i> Client</label>
+          <input type="text" [value]="userData?.sub" disabled class="input-disabled">
+        </div>
+        <div class="form-group">
+          <label><i class="fas fa-box"></i> Référence produit *</label>
+          <input type="text" name="produitId" [(ngModel)]="nouvelleCommande.produitId" required placeholder="ex: MY2-RTX4090">
+        </div>
+        <div class="form-row-2">
+          <div class="form-group">
+            <label><i class="fas fa-sort-numeric-up"></i> Quantité *</label>
+            <input type="number" name="quantite" [(ngModel)]="nouvelleCommande.quantite" required min="1">
+          </div>
+          <div class="form-group">
+            <label><i class="fas fa-tag"></i> Prix unitaire (TND) *</label>
+            <input type="number" name="prix" [(ngModel)]="nouvelleCommande.prixSnapshot" required min="0.01" step="0.01">
+          </div>
+        </div>
+        <div class="recap-box" *ngIf="nouvelleCommande.quantite > 0 && nouvelleCommande.prixSnapshot > 0">
+          <div class="recap-row"><span>Total estimé</span><strong>{{ (nouvelleCommande.quantite * nouvelleCommande.prixSnapshot) | number:'1.2-2' }} TND</strong></div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-close-modal" (click)="activeTab = 'liste'">Annuler</button>
+          <button type="submit" class="btn-confirm-modal" [disabled]="f.invalid || submitLoading">
+            {{ submitLoading ? 'Envoi...' : 'Confirmer' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

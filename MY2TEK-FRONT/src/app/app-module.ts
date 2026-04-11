@@ -30,6 +30,11 @@ import { CommonModule } from '@angular/common';
 import { ProductList } from './Ms-Product/product-list/product-list';
 import { AddProduct } from './Ms-Product/add-product/add-product';
 import { EditProduct } from './Ms-Product/edit-product/edit-product';
+import { CommandesList } from './Ms-Commandes/commandes-list/commandes-list';
+import { CreerCommande } from './Ms-Commandes/creer-commande/creer-commande';
+import { MesCommandes } from './Ms-Commandes/mes-commandes/mes-commandes';
+import { AdminCommandes } from './Ms-Commandes/admin-commandes/admin-commandes';
+import { Panier } from './Ms-Commandes/panier/panier';
 
 // 1. Keycloak Initialization Function
 function initializeKeycloak(keycloak: KeycloakService) {
@@ -64,6 +69,12 @@ function initializeKeycloak(keycloak: KeycloakService) {
     ProductList,   
     AddProduct,    
     EditProduct,
+    CommandesList,
+    CreerCommande,
+    MesCommandes,
+    AdminCommandes,
+    Panier,
+
   ],
   imports: [
     BrowserModule,
