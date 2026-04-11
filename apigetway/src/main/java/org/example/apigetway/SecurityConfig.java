@@ -31,6 +31,7 @@ public class SecurityConfig {
                         // Public GET endpoints
                         .pathMatchers(HttpMethod.GET, "/Review/**").permitAll()
                         .pathMatchers(HttpMethod.GET, "/users").permitAll()
+                        .pathMatchers(HttpMethod.DELETE, "/users/**").permitAll()
                         // Everything else needs a valid token
                         .anyExchange().authenticated()
                 )

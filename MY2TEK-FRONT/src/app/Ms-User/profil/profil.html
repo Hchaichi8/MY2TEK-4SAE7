@@ -101,52 +101,110 @@
         </div>
 
         <!-- ✅ REVIEWS TAB -->
-        <div *ngIf="activeTab === 'reviews'">
-          <div class="content-card">
-            <div class="card-header">
-              <div class="user-identity">
-                <h2 class="full-name">Mes Avis Publiés</h2>
-                <p class="user-email-sub">{{ myReviews.length }} avis publié(s)</p>
-              </div>
-              <button class="edit-link" routerLink="/detail-product">
-                <i class="fas fa-plus"></i> Laisser un avis
-              </button>
-            </div>
+       <!-- ✅ REVIEWS TAB -->
+<div *ngIf="activeTab === 'reviews'">
+  <div class="content-card">
+    <div class="card-header">
+      <div class="user-identity">
+        <h2 class="full-name">Mes Avis Publiés</h2>
+        <p class="user-email-sub">{{ myReviews.length }} avis publié(s)</p>
+      </div>
+      <button class="edit-link" routerLink="/detail-product">
+        <i class="fas fa-plus"></i> Laisser un avis
+      </button>
+    </div>
 
-            <!-- No reviews -->
-            <div *ngIf="myReviews.length === 0" class="no-reviews-profile">
-              <i class="fa-regular fa-comment-dots"></i>
-              <p>Vous n'avez pas encore publié d'avis.</p>
-            </div>
+    <div *ngIf="myReviews.length === 0" class="no-reviews-profile">
+      <i class="fa-regular fa-comment-dots"></i>
+      <p>Vous n'avez pas encore publié d'avis.</p>
+    </div>
 
-            <!-- Reviews list -->
-            <div class="my-reviews-list">
-              <div class="my-review-card" *ngFor="let r of myReviews">
-                <div class="review-card-header">
-                  <div class="review-product-info">
-                    <i class="fas fa-box"></i>
-                    <span>Produit #{{ r.productId }}</span>
-                  </div>
-                  <span class="review-date">
-                    {{ r.createdAt | date:'dd MMM yyyy' }}
-                  </span>
-                </div>
-
-                <div class="review-stars">
-                  <i class="fa-solid fa-star"
-                     *ngFor="let s of getStars(r.rating)"
-                     style="color: #f59e0b; font-size: 14px;"></i>
-                  <i class="fa-regular fa-star"
-                     *ngFor="let s of [].constructor(5 - r.rating)"
-                     style="color: #f59e0b; font-size: 14px;"></i>
-                  <span class="rating-text">{{ r.rating }}/5</span>
-                </div>
-
-                <p class="review-description">"{{ r.description }}"</p>
-              </div>
-            </div>
+    <div class="my-reviews-list">
+      <div class="my-review-card" *ngFor="let r of myReviews">
+        <div class="review-card-header">
+          <div class="review-product-info">
+            <i class="fas fa-box"></i>
+            <span>Produit #{{ r.productId }}</span>
+          </div>
+          <div class="review-actions">
+            <span class="review-date">{{ r.createdAt | date:'dd MMM yyyy' }}</span>
+            <!-- ✅ Edit button -->
+            <button class="btn-edit-review" (click)="openEditReview(r)">
+              <i class="fas fa-pen"></i>
+            </button>
+            <!-- ✅ Delete button -->
+            <button class="btn-delete-review" (click)="deleteReview(r.id)">
+              <i class="fas fa-trash"></i>
+            </button>
           </div>
         </div>
+
+        <div class="review-stars">
+          <i class="fa-solid fa-star"
+             *ngFor="let s of getStars(r.rating)"
+             style="color: #f59e0b; font-size: 14px;"></i>
+          <i class="fa-regular fa-star"
+             *ngFor="let s of [].constructor(5 - r.rating)"
+             style="color: #f59e0b; font-size: 14px;"></i>
+          <span class="rating-text">{{ r.rating }}/5</span>
+        </div>
+
+        <p class="review-description">"{{ r.description }}"</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ✅ Edit Review Modal -->
+<div class="modal-overlay" *ngIf="isReviewModalOpen" (click)="closeReviewModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>Modifier mon avis</h2>
+      <button class="close-btn" (click)="closeReviewModal()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    <div class="modal-body">
+      <form (ngSubmit)="saveReview()">
+
+        <!-- Star rating picker -->
+        <div class="form-group">
+          <label>Note</label>
+          <div class="stars-picker-edit">
+            <i *ngFor="let star of [1,2,3,4,5]"
+               class="fa-star"
+               [class.fa-solid]="editReviewData.rating >= star"
+               [class.fa-regular]="editReviewData.rating < star"
+               (click)="setEditRating(star)"
+               style="cursor:pointer; font-size: 24px; color: #f59e0b; margin-right: 4px;">
+            </i>
+          </div>
+        </div>
+
+        <!-- Description -->
+        <div class="form-group" style="margin-top: 16px;">
+          <label>Commentaire</label>
+          <textarea
+            name="description"
+            [(ngModel)]="editReviewData.description"
+            rows="4"
+            style="width:100%; padding:10px; border-radius:8px;
+                   border:1px solid #ddd; font-size:14px; resize:vertical;">
+          </textarea>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn-cancel" (click)="closeReviewModal()">
+            Annuler
+          </button>
+          <button type="submit" class="btn-save">
+            Enregistrer
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
 
       </section>
     </div>

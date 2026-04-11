@@ -14,8 +14,13 @@ export class Profil implements OnInit {
   userData: KeycloakProfile | null = null;
   userRoles: string[] = [];
   localProfile: any = null;
-  myReviews: any[] = [];        
-  activeTab: string = 'profile'; 
+  myReviews: any[] = [];
+  activeTab: string = 'profile';
+
+  // ✅ Edit review modal
+  isReviewModalOpen = false;
+  editingReview: any = null;
+  editReviewData = { description: '', rating: 5 };
 
   isModalOpen = false;
   editData = { firstName: '', lastName: '', phone: '', zipCode: '', location: '' };
@@ -35,13 +40,11 @@ export class Profil implements OnInit {
 
     this.userData = await this.keycloakService.loadUserProfile();
     this.userRoles = this.keycloakService.getUserRoles();
-
     this.editData.firstName = this.userData.firstName || '';
     this.editData.lastName  = this.userData.lastName  || '';
 
     const token = this.getToken();
 
-    // Load local profile
     this.http.get(`${this.GATEWAY}/users/me`, {
       headers: { Authorization: `Bearer ${token}` }
     }).subscribe({
@@ -55,36 +58,98 @@ export class Profil implements OnInit {
       error: (e) => console.warn('Could not load local profile:', e)
     });
 
-    // ✅ Load my reviews via OpenFeign
     this.loadMyReviews(token);
-
     this.cdr.detectChanges();
   }
 
-  // ✅ Get token from sessionStorage or Keycloak instance
   private getToken(): string {
     const session = sessionStorage.getItem('kc_token');
     if (session) return session;
     return this.keycloakService.getKeycloakInstance().token ?? '';
   }
 
-  // ✅ Calls UserMicroService → OpenFeign → ReviewMicroservice
   loadMyReviews(token: string) {
     this.http.get<any>(`${this.GATEWAY}/users/me/reviews`, {
       headers: { Authorization: `Bearer ${token}` }
     }).subscribe({
       next: (res) => {
         this.myReviews = res.reviews || [];
-        console.log('✅ My reviews loaded:', this.myReviews.length);
         this.cdr.detectChanges();
       },
       error: (err) => console.warn('Could not load reviews:', err)
     });
   }
 
-  setTab(tab: string) {
-    this.activeTab = tab;
+  // ✅ Open edit review modal
+  openEditReview(review: any) {
+    this.editingReview = review;
+    this.editReviewData = {
+      description: review.description,
+      rating: review.rating
+    };
+    this.isReviewModalOpen = true;
   }
+
+  closeReviewModal() {
+    this.isReviewModalOpen = false;
+    this.editingReview = null;
+  }
+
+  // ✅ Save updated review
+  saveReview() {
+    if (!this.editingReview) return;
+    const token = this.getToken();
+
+    const payload = {
+      id:          this.editingReview.id,
+      description: this.editReviewData.description,
+      rating:      this.editReviewData.rating,
+      clientId:    this.editingReview.clientId,
+      clientName:  this.editingReview.clientName,
+      productId:   this.editingReview.productId,
+      createdAt:   this.editingReview.createdAt
+    };
+
+    this.http.put(
+      `${this.GATEWAY}/Review/UpdateMyReview/${this.editingReview.id}`,
+      payload,
+      { headers: { Authorization: `Bearer ${token}` } }
+    ).subscribe({
+      next: () => {
+        console.log('✅ Review updated');
+        this.isReviewModalOpen = false;
+        this.editingReview = null;
+        this.loadMyReviews(token); // refresh list
+        this.cdr.detectChanges();
+      },
+      error: (err) => console.error('Update review failed:', err)
+    });
+  }
+
+  // ✅ Delete review
+  deleteReview(reviewId: number) {
+    if (!confirm('Voulez-vous vraiment supprimer cet avis ?')) return;
+    const token = this.getToken();
+
+    this.http.delete(
+      `${this.GATEWAY}/Review/DeleteMyReview/${reviewId}`,
+      { headers: { Authorization: `Bearer ${token}` } }
+    ).subscribe({
+      next: () => {
+        console.log('✅ Review deleted');
+        this.myReviews = this.myReviews.filter(r => r.id !== reviewId);
+        this.cdr.detectChanges();
+      },
+      error: (err) => console.error('Delete review failed:', err)
+    });
+  }
+
+  // ✅ Set star rating in edit modal
+  setEditRating(star: number) {
+    this.editReviewData.rating = star;
+  }
+
+  setTab(tab: string) { this.activeTab = tab; }
 
   getStars(rating: number): number[] {
     return Array(rating).fill(0);

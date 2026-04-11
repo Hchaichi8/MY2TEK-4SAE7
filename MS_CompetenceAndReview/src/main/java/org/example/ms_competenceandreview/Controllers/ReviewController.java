@@ -28,7 +28,6 @@ public class ReviewController {
     @Autowired
     private RabbitTemplate rabbitTemplate;
 
-    // ✅ ObjectMapper to parse JSON string
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @PostMapping("/enhance")
@@ -44,7 +43,6 @@ public class ReviewController {
         if (review.getCreatedAt() == null)
             review.setCreatedAt(java.time.LocalDateTime.now());
 
-        // ✅ OpenFeign — get real name from UserMicroService
         if (review.getClientId() != null && !review.getClientId().isEmpty()) {
             try {
                 String response  = userClient.getUserByKeycloakId(review.getClientId());
@@ -82,13 +80,16 @@ public class ReviewController {
         return saved;
     }
 
-    @PutMapping("/ModifierReview")
-    public Review ModifierReview(@RequestBody Review a) {
-        return reviewService.ModifierReview(a);
+    @PutMapping("/UpdateMyReview/{id}")
+    public Review updateMyReview(@PathVariable Long id, @RequestBody Review review) {
+        Review existing = reviewService.GetReview(id);
+        existing.setDescription(review.getDescription());
+        existing.setRating(review.getRating());
+        return reviewService.ModifierReview(existing);
     }
 
-    @DeleteMapping("/SupprimerReview/{id}")
-    public void SupprimerReview(@PathVariable Long id) {
+    @DeleteMapping("/DeleteMyReview/{id}")
+    public void deleteMyReview(@PathVariable Long id) {
         reviewService.SupprimerReview(id);
     }
 

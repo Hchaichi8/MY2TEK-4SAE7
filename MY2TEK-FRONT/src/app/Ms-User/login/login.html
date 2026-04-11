@@ -30,6 +30,12 @@
             <label>Mot de passe</label>
             <input type="password" name="password" [(ngModel)]="loginData.password" required placeholder="••••••••">
           </div>
+          <!-- Add below the password input -->
+<div class="forgot-link">
+  <span routerLink="/forgot-password" class="link">
+    Mot de passe oublié ?
+  </span>
+</div>
 
           <button type="submit" class="btn-primary" [disabled]="isLoading">
             <span *ngIf="!isLoading">Accéder au portail MY2TEK</span>

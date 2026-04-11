@@ -529,3 +529,54 @@
   margin-bottom: 12px;
   display: block;
 }
+.review-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-edit-review {
+  background: #f0f4ff;
+  color: #6366f1;
+  border: none;
+  width: 30px;
+  height: 30px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.btn-edit-review:hover {
+  background: #6366f1;
+  color: white;
+}
+
+.btn-delete-review {
+  background: #fff0f0;
+  color: #ef4444;
+  border: none;
+  width: 30px;
+  height: 30px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.btn-delete-review:hover {
+  background: #ef4444;
+  color: white;
+}
+
+.stars-picker-edit {
+  display: flex;
+  align-items: center;
+  margin-top: 6px;
+}
