@@ -1,0 +1,120 @@
+<div class="admin-container">
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div class="logo">MY2<span>TEK</span></div>
+      <p class="admin-tag">Console Admin</p>
+    </div>
+    <nav class="sidebar-nav">
+      <a class="nav-link active" routerLink="/dashboard-admin">
+        <i class="fa-solid fa-chart-line"></i> <span>Dashboard</span>
+      </a>
+      <a class="nav-link" routerLink="/user-admin">
+        <i class="fa-solid fa-users-cog"></i> <span>Utilisateurs</span>
+      </a>
+      <a class="nav-link">
+        <i class="fa-solid fa-laptop-code"></i> <span>Produits</span>
+      </a>
+      <a class="nav-link" routerLink="/admin/shipping">
+        <i class="fas fa-truck"></i> <span>Livraisons</span>
+      </a>
+      <a class="nav-link" routerLink="/admin/carriers">
+        <i class="fas fa-building"></i> <span>Transporteurs</span>
+      </a>
+      <div class="nav-divider"></div>
+      <a class="nav-link logout-link" (click)="onLogout()">
+        <i class="fa-solid fa-power-off"></i> <span>Déconnexion</span>
+      </a>
+    </nav>
+  </aside>
+
+  <main class="main-content">
+    <header class="top-bar">
+      <div class="page-title">
+        <h2>Vue d'ensemble</h2>
+        <p>Bienvenue sur le centre de contrôle MY2TEK.</p>
+      </div>
+      <div class="admin-profile">
+        <div class="notifications"><i class="fa-solid fa-bell"></i><span class="dot"></span></div>
+        <div class="avatar-admin">A</div>
+      </div>
+    </header>
+
+    <div class="content-body">
+      <div class="stats-grid-4">
+        <div class="stat-card">
+          <div class="stat-icon purple"><i class="fa-solid fa-wallet"></i></div>
+          <div class="stat-details">
+            <span class="label">Revenu Total</span>
+            <span class="value">45,280 TND</span>
+            <span class="trend up"><i class="fa-solid fa-arrow-up"></i> 12%</span>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon blue"><i class="fa-solid fa-cart-shopping"></i></div>
+          <div class="stat-details">
+            <span class="label">Commandes</span>
+            <span class="value">128</span>
+            <span class="trend up"><i class="fa-solid fa-arrow-up"></i> 5%</span>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon green"><i class="fa-solid fa-user-plus"></i></div>
+          <div class="stat-details">
+            <span class="label">Nouveaux Clients</span>
+            <span class="value">{{ users.length }}</span>
+            <span class="trend down"><i class="fa-solid fa-arrow-down"></i> 2%</span>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon orange"><i class="fa-solid fa-microchip"></i></div>
+          <div class="stat-details">
+            <span class="label">Stock Critique</span>
+            <span class="value">12</span>
+            <span class="trend neutral">Stable</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="dashboard-grid-2">
+        <div class="data-card chart-container">
+          <div class="card-header">
+            <h3>Activité des ventes</h3>
+            <select class="select-period">
+              <option>7 derniers jours</option>
+              <option>30 jours</option>
+            </select>
+          </div>
+          <div class="fake-chart">
+            <div class="bar" style="height: 40%"></div>
+            <div class="bar" style="height: 60%"></div>
+            <div class="bar" style="height: 85%"></div>
+            <div class="bar" style="height: 50%"></div>
+            <div class="bar active" style="height: 95%"></div>
+            <div class="bar" style="height: 70%"></div>
+            <div class="bar" style="height: 65%"></div>
+          </div>
+          <div class="chart-labels">
+            <span>Lun</span><span>Mar</span><span>Mer</span><span>Jeu</span><span>Ven</span><span>Sam</span><span>Dim</span>
+          </div>
+        </div>
+
+        <div class="data-card">
+          <div class="card-header">
+            <h3>Dernières Inscriptions</h3>
+            <button class="btn-link" routerLink="/user-admin">Voir tout</button>
+          </div>
+          <div class="activity-list">
+            <div class="activity-item" *ngFor="let u of users.slice(0, 5)">
+              <div class="activity-avatar">{{ u.firstName?.charAt(0) }}</div>
+              <div class="activity-info">
+                <p><strong>{{ u.firstName }} {{ u.lastName }}</strong> a rejoint la plateforme.</p>
+                <span>{{ u.email }}</span>
+              </div>
+              <div class="activity-time">À l'instant</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>

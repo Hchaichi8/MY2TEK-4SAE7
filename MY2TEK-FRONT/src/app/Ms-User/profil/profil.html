@@ -1,0 +1,127 @@
+<nav class="navbar">
+  <div class="nav-container">
+    <div class="nav-brand" routerLink="/">
+      MY2<span>TEK</span>
+    </div>
+
+    <div class="nav-search">
+      <input type="text" placeholder="Rechercher un composant, un PC...">
+      <button><i class="fas fa-search"></i></button>
+    </div>
+
+    <div class="nav-actions">
+      <a class="nav-link" routerLink="/home"><i class="fas fa-home"></i> <span>Accueil</span></a>
+      <a class="nav-link" routerLink="/wishlist"><i class="fas fa-heart"></i> <span class="badge">0</span></a>
+      <a class="nav-link cart-link" routerLink="/cart">
+        <i class="fas fa-shopping-cart"></i>
+        <span class="cart-count">3</span>
+      </a>
+      
+      <div class="user-dropdown">
+        <div class="user-trigger">
+          <div class="avatar-sm">{{ userData?.sub?.charAt(0).toUpperCase() }}</div>
+          <span>Mon Compte</span>
+          <i class="fas fa-chevron-down"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<div class="page-wrapper">
+  <div class="container">
+    <header class="page-header">
+      <h1>Mon Compte</h1>
+      <p>Gérez vos informations et suivez vos commandes MY2TEK.</p>
+    </header>
+
+    <div class="profile-layout">
+      <aside class="profile-nav">
+        <a class="p-nav-item active"><i class="fas fa-user"></i> Informations personnelles</a>
+        <a class="p-nav-item"><i class="fas fa-box"></i> Mes Commandes</a>
+        <a class="p-nav-item"><i class="fas fa-map-marker-alt"></i> Mes Adresses</a>
+        <a class="p-nav-item"><i class="fas fa-shield-alt"></i> Sécurité</a>
+        <hr>
+        <button class="btn-logout" (click)="onLogout()">Déconnexion</button>
+      </aside>
+
+      <section class="profile-content">
+  <div class="profile-alert" *ngIf="!userData?.firstName || !userData?.lastName">
+    <div class="alert-icon"><i class="fas fa-exclamation-circle"></i></div>
+    <div class="alert-text">
+      <strong>Profil incomplet !</strong>
+      <p>Veuillez compléter votre nom et prénom pour une meilleure expérience sur MY2TEK.</p>
+    </div>
+    <button class="btn-complete" (click)="openModal()">Compléter</button>
+  </div>
+
+  <div class="content-card">
+    <div class="card-header">
+      <div class="user-identity">
+        <h2 class="full-name">
+          {{ (userData?.firstName || userData?.lastName) ? (userData?.firstName + ' ' + userData?.lastName) : 'Utilisateur MY2TEK' }}
+        </h2>
+        <p class="user-email-sub">{{ userData?.sub }}</p>
+      </div>
+      <button class="edit-link" (click)="openModal()">
+        <i class="fas fa-pen"></i> Modifier
+      </button>
+    </div>
+    
+    <div class="user-info-grid">
+      <div class="info-group">
+        <label>Type de compte</label>
+        <div class="info-value"><span class="role-tag">{{ userData?.role }}</span></div>
+      </div>
+      <div class="info-group">
+        <label>ID Client</label>
+        <div class="info-value">#MY2T-{{ userData?.id }}</div>
+      </div>
+      <div class="info-group">
+        <label>Téléphone</label>
+        <div class="info-value">{{ userData?.phone || 'Non renseigné' }}</div>
+      </div>
+    </div>
+  </div>
+
+  </section>
+    </div>
+  </div>
+  <div class="modal-overlay" *ngIf="isModalOpen" (click)="closeModal($event)">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>Modifier mes informations</h2>
+      <button class="close-btn" (click)="closeModal()"><i class="fas fa-times"></i></button>
+    </div>
+    
+    <div class="modal-body">
+      <form (ngSubmit)="saveProfile()">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Prénom</label>
+            <input type="text" name="firstName" [(ngModel)]="editData.firstName" placeholder="Votre prénom">
+          </div>
+          <div class="form-group">
+            <label>Nom</label>
+            <input type="text" name="lastName" [(ngModel)]="editData.lastName" placeholder="Votre nom">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Téléphone</label>
+          <input type="tel" name="phone" [(ngModel)]="editData.phone" placeholder="+216 12 345 678">
+        </div>
+
+        <div class="form-group disabled-group">
+          <label>Email (Non modifiable)</label>
+          <input type="email" name="email" [value]="userData?.sub" disabled>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn-cancel" (click)="closeModal()">Annuler</button>
+          <button type="submit" class="btn-save">Enregistrer</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
