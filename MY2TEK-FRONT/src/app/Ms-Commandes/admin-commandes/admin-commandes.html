@@ -1,16 +1,28 @@
 <div class="admin-layout">
 
-  <!-- SIDEBAR -->
   <aside class="sidebar">
-    <div class="sidebar-brand">MY2<span>TEK</span></div>
-    <p class="sidebar-tag">Console Admin</p>
+    <div class="sidebar-header">
+      <div class="logo">MY2<span>TEK</span></div>
+      <p class="admin-tag">Console Admin</p>
+    </div>
     <nav class="sidebar-nav">
-      <a class="nav-item" routerLink="/dashboard-admin"><i class="fa-solid fa-chart-line"></i> Dashboard</a>
-      <a class="nav-item" routerLink="/user-admin"><i class="fa-solid fa-users-cog"></i> Utilisateurs</a>
-      <a class="nav-item"><i class="fa-solid fa-laptop-code"></i> Produits</a>
-      <a class="nav-item active"><i class="fa-solid fa-receipt"></i> Commandes</a>
+      <a class="nav-link" routerLink="/dashboard-admin">
+        <i class="fa-solid fa-chart-line"></i> <span>Dashboard</span>
+      </a>
+      <a class="nav-link" routerLink="/user-admin">
+        <i class="fa-solid fa-users-cog"></i> <span>Utilisateurs</span>
+      </a>
+      <a class="nav-link" routerLink="/product-list">
+        <i class="fa-solid fa-laptop-code"></i> <span>Produits</span>
+      </a>
+      <a class="nav-link active" routerLink="/admin/commandes">
+        <i class="fa-solid fa-receipt"></i> <span>Commandes</span>
+      </a>
+      <div class="nav-divider"></div>
+      <a class="nav-link logout-link" (click)="onLogout()">
+        <i class="fa-solid fa-power-off"></i> <span>Déconnexion</span>
+      </a>
     </nav>
-    <button class="btn-logout" (click)="onLogout()"><i class="fa-solid fa-power-off"></i> Déconnexion</button>
   </aside>
 
   <!-- MAIN -->
