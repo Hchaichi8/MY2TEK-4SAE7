@@ -12,6 +12,7 @@
         <option value="$PROJECT_DIR$/Product-MS/pom.xml" />
         <option value="$PROJECT_DIR$/MS_Commandes/pom.xml" />
         <option value="$PROJECT_DIR$/ShippingMicroService/pom.xml" />
+        <option value="$PROJECT_DIR$/ShippingMicroService/ShippingMicroService/pom.xml" />
       </list>
     </option>
   </component>

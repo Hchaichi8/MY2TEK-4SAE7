@@ -2,6 +2,7 @@ import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { Commande, CommandeService } from '../service/commande.service';
 import { KeycloakService } from 'keycloak-angular';
+import { HttpClient } from '@angular/common/http';
 
 @Component({
   selector: 'app-mes-commandes',
@@ -30,13 +31,31 @@ export class MesCommandes implements OnInit {
   modifSuccess = false;
   modifError = '';
 
+  // ── Livraison modal ────────────────────────────────────────────────────────
+  livraisonCommande: Commande | null = null;
+  livraisonLoading = false;
+  livraisonSuccess = false;
+  livraisonError = '';
+  livraisonTracking = '';
+  livraisonForm = {
+    recipientName: '',
+    recipientEmail: '',
+    destination: '',
+    weightKg: 1,
+    widthCm: 20,
+    heightCm: 15,
+    lengthCm: 30
+  };
+
+  private readonly SHIPPING_API = 'http://localhost:8082';
   private readonly statutOrder = ['CREATED', 'VALIDATED', 'SHIPPED', 'DELIVERED'];
 
   constructor(
     private commandeService: CommandeService,
-    private keycloakService: KeycloakService,  // ← replace User service
+    private keycloakService: KeycloakService,
     private router: Router,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private http: HttpClient
   ) {}
 
   async ngOnInit() {
@@ -111,7 +130,6 @@ export class MesCommandes implements OnInit {
     });
   }
 
-  // ── Stats helpers ──────────────────────────────────────────────────────────
   countByStatut(s: string): number {
     return this.commandes.filter(c => c.statut === s).length;
   }
@@ -121,7 +139,6 @@ export class MesCommandes implements OnInit {
       .reduce((sum, c) => sum + c.prixSnapshot * c.quantite, 0);
   }
 
-  // ── Product display (uses real product data from commande) ─────────────────
   getProductImage(produitId: string): string {
     return 'https://via.placeholder.com/300x200?text=Produit+' + produitId;
   }
@@ -139,6 +156,10 @@ export class MesCommandes implements OnInit {
   isStepDone(current?: string, step?: string): boolean {
     if (!current || !step) return false;
     return this.statutOrder.indexOf(current) >= this.statutOrder.indexOf(step);
+  }
+
+  canRequestLivraison(c: Commande): boolean {
+    return c.statut === 'VALIDATED';
   }
 
   voirDetail(c: Commande) { this.selectedCommande = { ...c }; }
@@ -189,6 +210,76 @@ export class MesCommandes implements OnInit {
       error: () => {}
     });
   }
+
+  // ── Livraison ──────────────────────────────────────────────────────────────
+
+  ouvrirLivraison(c: Commande) {
+    this.livraisonCommande = c;
+    this.livraisonSuccess = false;
+    this.livraisonError = '';
+    this.livraisonTracking = '';
+    this.livraisonForm = {
+      recipientName:  `${this.userData?.firstName || ''} ${this.userData?.lastName || ''}`.trim(),
+      recipientEmail: this.userData?.email || '',
+      destination: '',
+      weightKg: 1,
+      widthCm: 20,
+      heightCm: 15,
+      lengthCm: 30
+    };
+  }
+
+  fermerLivraison() {
+    this.livraisonCommande = null;
+    if (this.livraisonSuccess) this.loadCommandes();
+  }
+
+  confirmerLivraison() {
+    if (!this.livraisonCommande?.id) return;
+    this.livraisonLoading = true;
+    this.livraisonError = '';
+
+    const payload = {
+      orderId:        this.livraisonCommande.id,
+      recipientName:  this.livraisonForm.recipientName,
+      recipientEmail: this.livraisonForm.recipientEmail,
+      destination:    this.livraisonForm.destination,
+      weightKg:       this.livraisonForm.weightKg,
+      widthCm:        this.livraisonForm.widthCm,
+      heightCm:       this.livraisonForm.heightCm,
+      lengthCm:       this.livraisonForm.lengthCm
+    };
+
+    this.http.post<any>(`${this.SHIPPING_API}/shipments`, payload).subscribe({
+      next: (shipment) => {
+        this.livraisonTracking = shipment.trackingNumber;
+        // Update order status to SHIPPED
+        this.commandeService.updateStatut(this.livraisonCommande!.id!, 'SHIPPED').subscribe({
+          next: (updated) => {
+            const idx = this.commandes.findIndex(c => c.id === updated.id);
+            if (idx !== -1) this.commandes[idx] = updated;
+            this.applyFilter();
+          },
+          error: () => {}
+        });
+        this.livraisonLoading = false;
+        this.livraisonSuccess = true;
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        this.livraisonLoading = false;
+        this.livraisonError = err.error || 'Erreur lors de la création de la livraison.';
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  trackLivraison() {
+    this.router.navigate(['/track', this.livraisonTracking]);
+    this.fermerLivraison();
+  }
+
+  // ── Nouvelle commande ──────────────────────────────────────────────────────
 
   openNouvelleCommande() {
     this.nouvelleCommande = { clientId: this.clientId, produitId: '', prixSnapshot: 0, quantite: 1 };

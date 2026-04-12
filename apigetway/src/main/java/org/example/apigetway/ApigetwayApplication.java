@@ -32,6 +32,23 @@ public class ApigetwayApplication {
                                 .dedupeResponseHeader("Access-Control-Allow-Credentials", "RETAIN_UNIQUE")
                         )
                         .uri("lb://MSCompetenceAndReview"))
+
+
+                .route("idrouteproduct", r -> r.path("/products/**")
+                        .filters(f -> f
+                                .stripPrefix(0)
+                                .dedupeResponseHeader("Access-Control-Allow-Origin", "RETAIN_UNIQUE")
+                                .dedupeResponseHeader("Access-Control-Allow-Credentials", "RETAIN_UNIQUE")
+                        )
+                        .uri("lb://ProductMicroService"))
+
+                .route("idrouteCommandes", r -> r.path("/Commandes/**")
+                        .filters(f -> f
+                                .stripPrefix(0)
+                                .dedupeResponseHeader("Access-Control-Allow-Origin", "RETAIN_UNIQUE")
+                                .dedupeResponseHeader("Access-Control-Allow-Credentials", "RETAIN_UNIQUE")
+                        )
+                        .uri("lb://MSCommandes"))
                 .build();
     }
 }

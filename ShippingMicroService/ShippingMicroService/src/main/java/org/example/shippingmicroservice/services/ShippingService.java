@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.time.LocalDateTime;
 
@@ -34,6 +35,9 @@ public class ShippingService {
     private org.example.shippingmicroservice.feign.UserServiceClient userServiceClient;
 
     @Autowired
+    private org.example.shippingmicroservice.feign.CommandeClient commandeClient;
+
+    @Autowired
     private org.example.shippingmicroservice.messaging.ShipmentEventProducer eventProducer;
 
     @Autowired
@@ -42,12 +46,35 @@ public class ShippingService {
     // ─── CREATE ──────────────────────────────────────────────────────────────
 
     public Shipment createShipment(CreateShipmentRequest req) {
-        // Scenario 1 — Feign: verify recipient email exists in UserMicroService
+        // Scenario 1 — Feign → UserMicroService: verify recipient email
         try {
             userServiceClient.getUserByEmail(req.getRecipientEmail());
+            System.out.println("[Feign] Recipient email verified in UserMicroService: " + req.getRecipientEmail());
         } catch (Exception e) {
-            // User not found or UserMicroService unavailable — log and continue
             System.out.println("[Feign] Could not verify user email via UserMicroService: " + e.getMessage());
+        }
+
+        // Scenario 1 — Feign → MS_Commandes: verify order exists and is VALIDATED
+        if (req.getOrderId() != null) {
+            try {
+                Map<String, Object> commande = commandeClient.getCommandeById(req.getOrderId());
+                if (!commande.isEmpty()) {
+                    String statut = (String) commande.get("statut");
+                    if (statut != null && !statut.equals("VALIDATED") && !statut.equals("CREATED")) {
+                        throw new RuntimeException(
+                            "La commande #" + req.getOrderId() + " n'est pas dans un état permettant une livraison (statut actuel: " + statut + "). Elle doit être VALIDATED."
+                        );
+                    }
+                    System.out.println("[Feign] Commande #" + req.getOrderId() + " vérifiée — statut: " + statut);
+                } else {
+                    System.out.println("[Feign Fallback] MS_Commandes indisponible — livraison autorisée en mode dégradé.");
+                }
+            } catch (RuntimeException e) {
+                if (e.getMessage() != null && e.getMessage().contains("n'est pas dans un état")) {
+                    throw e; // block the shipment
+                }
+                System.out.println("[Feign] Erreur vérification commande: " + e.getMessage() + " — mode dégradé.");
+            }
         }
         Carrier carrier = (req.getCarrierId() != null)
                 ? carrierService.getCarrierById(req.getCarrierId())
@@ -138,6 +165,18 @@ public class ShippingService {
 
         // RabbitMQ: publish event when shipment is DELIVERED
         if (newStatus == ShipmentStatus.DELIVERED) {
+            // Scenario 2 — Feign → MS_Commandes: sync order status to DELIVERED
+            try {
+                Map<String, Object> result = commandeClient.markCommandeDelivered(updated.getOrderId());
+                if (!result.isEmpty()) {
+                    System.out.println("[Feign] Commande #" + updated.getOrderId() + " mise à jour → DELIVERED via MS_Commandes.");
+                } else {
+                    System.out.println("[Feign Fallback] Sync DELIVERED ignoré — MS_Commandes indisponible.");
+                }
+            } catch (Exception e) {
+                System.out.println("[Feign] Erreur sync statut commande: " + e.getMessage());
+            }
+
             org.example.shippingmicroservice.dto.ShipmentDeliveredEvent event =
                 new org.example.shippingmicroservice.dto.ShipmentDeliveredEvent(
                     updated.getId(),

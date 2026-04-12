@@ -19,7 +19,13 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDTO syncUser(UserSyncRequest request) {
         return userRepository.findByKeycloakId(request.getKeycloakId())
-                .map(this::toDTO)
+                .map(existing -> {
+                    // Update in case name/email changed in Keycloak
+                    if (request.getFirstName() != null) existing.setFirstName(request.getFirstName());
+                    if (request.getLastName() != null)  existing.setLastName(request.getLastName());
+                    if (request.getEmail() != null)     existing.setEmail(request.getEmail());
+                    return toDTO(userRepository.save(existing));
+                })
                 .orElseGet(() -> {
                     User user = User.builder()
                             .keycloakId(request.getKeycloakId())
@@ -31,7 +37,6 @@ public class UserServiceImpl implements UserService {
                     return toDTO(userRepository.save(user));
                 });
     }
-
     @Override
     public List<UserDTO> getAllUsers() {
         return userRepository.findAll().stream().map(this::toDTO).collect(Collectors.toList());
@@ -44,8 +49,18 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new RuntimeException("User not found: " + keycloakId));
     }
 
+    private final KeycloakAdminService keycloakAdminService;
+
+    @Override
+    public void deleteUser(String keycloakId) {
+        keycloakAdminService.deleteUser(keycloakId);
+        userRepository.findByKeycloakId(keycloakId)
+                .ifPresent(userRepository::delete);
+    }
+
     @Override
     public UserDTO updateUser(String keycloakId, UserDTO dto) {
+        // 1. Update local DB
         User user = userRepository.findByKeycloakId(keycloakId)
                 .orElseThrow(() -> new RuntimeException("User not found: " + keycloakId));
         user.setFirstName(dto.getFirstName());
@@ -53,16 +68,13 @@ public class UserServiceImpl implements UserService {
         user.setPhone(dto.getPhone());
         user.setLocation(dto.getLocation());
         user.setZipCode(dto.getZipCode());
-        return toDTO(userRepository.save(user));
-    }
+        User saved = userRepository.save(user);
 
-    @Override
-    public void deleteUser(String keycloakId) {
-        User user = userRepository.findByKeycloakId(keycloakId)
-                .orElseThrow(() -> new RuntimeException("User not found: " + keycloakId));
-        userRepository.delete(user);
-    }
+        // 2. Sync name to Keycloak
+        keycloakAdminService.updateUser(keycloakId, dto.getFirstName(), dto.getLastName());
 
+        return toDTO(saved);
+    }
     private UserDTO toDTO(User u) {
         return UserDTO.builder()
                 .id(u.getId()).keycloakId(u.getKeycloakId())

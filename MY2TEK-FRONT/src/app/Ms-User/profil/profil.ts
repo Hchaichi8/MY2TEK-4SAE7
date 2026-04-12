@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import { KeycloakService } from 'keycloak-angular';
 import { KeycloakProfile } from 'keycloak-js';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { ShippingService } from '../../Ms-Shipping/Service/shipping';
 
 @Component({
   selector: 'app-profil',
@@ -25,6 +26,28 @@ export class Profil implements OnInit {
   isModalOpen = false;
   editData = { firstName: '', lastName: '', phone: '', zipCode: '', location: '' };
 
+   myShipments: any[] = [];
+  shipmentsLoading = false;
+  shipmentsError: string | null = null;
+
+  isShipmentModalOpen = false;
+  carriers: any[] = [];
+  newShipment = { destination: '', weightKg: '', widthCm: '', heightCm: '', lengthCm: '', carrierId: '' };
+  shipmentCreateError: string | null = null;
+  shipmentCreateSuccess: string | null = null;
+
+  isTrackOpen = false;
+  trackingInput = '';
+  trackResult: any = null;
+  trackError: string | null = null;
+
+  isEditShipOpen = false;
+  editShip: any = null;
+  editShipError: string | null = null;
+  editShipSuccess: string | null = null;
+
+  trackSteps = ['READY_TO_SHIP', 'SHIPPED', 'IN_TRANSIT', 'DELIVERED'];
+
   private readonly GATEWAY = 'http://localhost:8085';
 
   constructor(
@@ -32,6 +55,7 @@ export class Profil implements OnInit {
     private router: Router,
     private cdr: ChangeDetectorRef,
     private http: HttpClient,
+    private shippingService: ShippingService
   ) {}
 
   async ngOnInit() {
@@ -196,4 +220,113 @@ export class Profil implements OnInit {
       error: (e) => console.error('Update failed:', e)
     });
   }
+    loadMyShipments() {
+    this.shipmentsLoading = true;
+    this.shipmentsError = null;
+    this.shippingService.getAllShipments().subscribe({
+      next: (data) => {
+        const userEmail = (this.userData?.email || '').toLowerCase();
+        this.myShipments = data.filter((s: any) =>
+          s.recipientEmail?.toLowerCase() === userEmail
+        );
+        this.shipmentsLoading = false;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.shipmentsError = 'Impossible de charger vos livraisons.';
+        this.shipmentsLoading = false;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+  openShipmentModal() {
+    this.isShipmentModalOpen = true;
+    this.shipmentCreateError = null;
+    this.shipmentCreateSuccess = null;
+    this.newShipment = { destination: '', weightKg: '', widthCm: '', heightCm: '', lengthCm: '', carrierId: '' };
+    this.shippingService.getAllCarriers().subscribe(data => { this.carriers = data; this.cdr.detectChanges(); });
+  }
+  openTrack(trackingNumber?: string) {
+    this.isTrackOpen = true;
+    this.trackResult = null;
+    this.trackError = null;
+    this.trackingInput = trackingNumber || '';
+    if (trackingNumber) this.doTrack();
+  }
+  doTrack() {
+    if (!this.trackingInput.trim()) return;
+    this.trackResult = null;
+    this.trackError = null;
+    this.shippingService.trackShipment(this.trackingInput.trim()).subscribe({
+      next: (data) => { this.trackResult = data; this.cdr.detectChanges(); },
+      error: () => { this.trackError = 'Aucun colis trouvé.'; this.cdr.detectChanges(); }
+    });
+  }
+  openEditShip(shipment: any) {
+    if (shipment.status !== 'READY_TO_SHIP') {
+      alert('Modification possible uniquement pour les livraisons "Prêt à expédier".');
+      return;
+    }
+    this.editShip = { ...shipment };
+    this.editShipError = null;
+    this.editShipSuccess = null;
+    this.isEditShipOpen = true;
+  }
+
+  closeEditShip() { this.isEditShipOpen = false; }
+
+  submitEditShip() {
+    this.editShipError = null;
+    const payload = {
+      orderId: this.editShip.orderId, recipientName: this.editShip.recipientName,
+      recipientEmail: this.editShip.recipientEmail, destination: this.editShip.destination,
+      weightKg: Number(this.editShip.weightKg), widthCm: Number(this.editShip.widthCm),
+      heightCm: Number(this.editShip.heightCm), lengthCm: Number(this.editShip.lengthCm),
+    };
+    this.shippingService.updateShipment(this.editShip.id, payload).subscribe({
+      next: () => {
+        this.editShipSuccess = 'Livraison mise à jour !';
+        this.cdr.detectChanges();
+        setTimeout(() => { this.closeEditShip(); this.loadMyShipments(); }, 1200);
+      },
+      error: (err) => { this.editShipError = err.error?.error || 'Erreur.'; this.cdr.detectChanges(); }
+    });
+  }
+
+  cancelShipment(shipment: any) {
+    if (shipment.status !== 'READY_TO_SHIP') { alert('Annulation possible uniquement pour les livraisons "Prêt à expédier".'); return; }
+    if (!confirm(`Annuler la livraison ${shipment.trackingNumber} ?`)) return;
+    this.shippingService.deleteShipment(shipment.id).subscribe({
+      next: () => { this.myShipments = this.myShipments.filter(s => s.id !== shipment.id); this.cdr.detectChanges(); },
+      error: () => alert('Erreur lors de l\'annulation.')
+    });
+  }
+
+  getStepIndex(status: string): number { return this.trackSteps.indexOf(status); }
+
+  getStepLabel(step: string): string {
+    const map: any = { READY_TO_SHIP: 'Prêt', SHIPPED: 'Expédié', IN_TRANSIT: 'En transit', DELIVERED: 'Livré' };
+    return map[step] || step;
+  }
+
+  getStepIcon(step: string): string {
+    const map: any = { READY_TO_SHIP: 'fa-box', SHIPPED: 'fa-shipping-fast', IN_TRANSIT: 'fa-truck', DELIVERED: 'fa-check-circle' };
+    return map[step] || 'fa-circle';
+  }
+
+  getStatusLabel(status: string): string {
+    const map: any = { READY_TO_SHIP: 'Prêt', SHIPPED: 'Expédié', IN_TRANSIT: 'En transit',
+      DELIVERED: 'Livré', RETURN_REQUESTED: 'Retour demandé', RETURN_SHIPPED: 'Retour expédié', RETURNED: 'Retourné' };
+    return map[status] || status;
+  }
+
+  getStatusColor(status: string): string {
+    const map: any = { READY_TO_SHIP: '#0369a1', SHIPPED: '#c2410c', IN_TRANSIT: '#854d0e',
+      DELIVERED: '#15803d', RETURN_REQUESTED: '#dc2626', RETURN_SHIPPED: '#7e22ce', RETURNED: '#64748b' };
+    return map[status] || '#94a3b8';
+  }
+
+
+
+
 }

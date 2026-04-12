@@ -23,16 +23,18 @@ public class SecurityConfig {
     public SecurityWebFilterChain springSecurityFilterChain(ServerHttpSecurity http) {
         http
                 .csrf(csrf -> csrf.disable())
-                // ✅ Use our explicit CORS bean instead of relying on properties
+
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeExchange(exchanges -> exchanges
-                        // ✅ OPTIONS must be first and fully permitted
+                        .pathMatchers("/users/keycloak/all").permitAll()
+
                         .pathMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        // Public GET endpoints
+
                         .pathMatchers(HttpMethod.GET, "/Review/**").permitAll()
                         .pathMatchers(HttpMethod.GET, "/users").permitAll()
                         .pathMatchers(HttpMethod.DELETE, "/users/**").permitAll()
-                        // Everything else needs a valid token
+                        .pathMatchers(HttpMethod.PUT, "/users/**").permitAll()
+
                         .anyExchange().authenticated()
                 )
                 .oauth2ResourceServer(oauth2 -> oauth2

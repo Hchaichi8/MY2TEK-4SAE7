@@ -164,8 +164,15 @@
           <button class="btn-detail" (click)="voirDetail(c)">
             <i class="fas fa-eye"></i> Détails
           </button>
-          <button class="btn-edit-card" routerLink="/track">
-            <i class="fas fa-pen"></i> Livraison
+          <button class="btn-edit-card"
+                  *ngIf="canRequestLivraison(c)"
+                  (click)="ouvrirLivraison(c)">
+            <i class="fas fa-truck"></i> Livraison
+          </button>
+          <button class="btn-edit-card btn-track"
+                  *ngIf="c.statut === 'SHIPPED' || c.statut === 'DELIVERED'"
+                  routerLink="/track">
+            <i class="fas fa-map-marker-alt"></i> Suivre
           </button>
           <button class="btn-annuler-card" *ngIf="c.statut === 'CREATED'" (click)="annuler(c.id)">
             <i class="fas fa-times"></i>
@@ -286,6 +293,88 @@
           <button type="button" class="btn-close-modal" (click)="fermerModification()">Annuler</button>
           <button type="submit" class="btn-confirm-modal" [disabled]="mf.invalid || modifLoading">
             <i class="fas fa-save"></i> {{ modifLoading ? 'Sauvegarde...' : 'Enregistrer' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODAL LIVRAISON ===== -->
+<div class="modal-overlay" *ngIf="livraisonCommande" (click)="fermerLivraison()">
+  <div class="modal-box modal-form" (click)="$event.stopPropagation()">
+    <div class="modal-head">
+      <h3><i class="fas fa-truck"></i> Demander une livraison — Commande #{{ livraisonCommande.id }}</h3>
+      <button class="close-btn" (click)="fermerLivraison()"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <!-- SUCCESS -->
+      <div *ngIf="livraisonSuccess" class="livraison-success">
+        <div class="success-icon"><i class="fas fa-check-circle"></i></div>
+        <h3>Livraison créée avec succès !</h3>
+        <p>Numéro de suivi :</p>
+        <div class="tracking-badge">{{ livraisonTracking }}</div>
+        <p class="tracking-hint">Un email a été envoyé à {{ livraisonForm.recipientEmail }}</p>
+        <div class="modal-footer">
+          <button class="btn-close-modal" (click)="fermerLivraison()">Fermer</button>
+          <button class="btn-confirm-modal" (click)="trackLivraison()">
+            <i class="fas fa-map-marker-alt"></i> Suivre mon colis
+          </button>
+        </div>
+      </div>
+      <!-- FORM -->
+      <form *ngIf="!livraisonSuccess" (ngSubmit)="confirmerLivraison()" #lf="ngForm">
+        <div class="alert-error-msg" *ngIf="livraisonError">
+          <i class="fas fa-exclamation-circle"></i> {{ livraisonError }}
+        </div>
+        <div class="recap-box" style="margin-bottom:16px">
+          <div class="recap-row">
+            <span>Commande</span><strong>#{{ livraisonCommande.id }} — {{ getProductName(livraisonCommande.produitId) }}</strong>
+          </div>
+          <div class="recap-row">
+            <span>Montant</span><strong>{{ (livraisonCommande.prixSnapshot * livraisonCommande.quantite) | number:'1.2-2' }} TND</strong>
+          </div>
+        </div>
+        <h4 style="margin:0 0 12px;color:#1e293b"><i class="fas fa-user"></i> Destinataire</h4>
+        <div class="form-row-2">
+          <div class="form-group">
+            <label>Nom complet *</label>
+            <input type="text" name="recipientName" [(ngModel)]="livraisonForm.recipientName" required placeholder="Ayoub Somrani">
+          </div>
+          <div class="form-group">
+            <label>Email *</label>
+            <input type="email" name="recipientEmail" [(ngModel)]="livraisonForm.recipientEmail" required placeholder="email@example.com">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Adresse de livraison *</label>
+          <input type="text" name="destination" [(ngModel)]="livraisonForm.destination" required placeholder="ex: 12 Rue de la Liberté, Tunis">
+        </div>
+        <h4 style="margin:16px 0 12px;color:#1e293b"><i class="fas fa-box"></i> Dimensions du colis</h4>
+        <div class="form-row-2">
+          <div class="form-group">
+            <label>Poids (kg) *</label>
+            <input type="number" name="weightKg" [(ngModel)]="livraisonForm.weightKg" required min="0.1" step="0.1">
+          </div>
+          <div class="form-group">
+            <label>Largeur (cm)</label>
+            <input type="number" name="widthCm" [(ngModel)]="livraisonForm.widthCm" min="1">
+          </div>
+        </div>
+        <div class="form-row-2">
+          <div class="form-group">
+            <label>Hauteur (cm)</label>
+            <input type="number" name="heightCm" [(ngModel)]="livraisonForm.heightCm" min="1">
+          </div>
+          <div class="form-group">
+            <label>Longueur (cm)</label>
+            <input type="number" name="lengthCm" [(ngModel)]="livraisonForm.lengthCm" min="1">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-close-modal" (click)="fermerLivraison()">Annuler</button>
+          <button type="submit" class="btn-confirm-modal" [disabled]="lf.invalid || livraisonLoading">
+            <i class="fas fa-truck"></i> {{ livraisonLoading ? 'Création...' : 'Confirmer la livraison' }}
           </button>
         </div>
       </form>

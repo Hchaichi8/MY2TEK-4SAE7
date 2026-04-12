@@ -1,6 +1,7 @@
 package org.example.productms.Controllers;
 
 import org.example.productms.Entities.Product;
+import org.example.productms.Repositories.ProductRepository;
 import org.example.productms.Services.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -20,9 +21,15 @@ public class ProductController {
 
     @Autowired
     private ProductService productService;
-
+    @Autowired
+    private ProductRepository productRepository;
     // ── CRUD ──────────────────────────────────────────────────────────────────
-
+    @GetMapping("/feign/{id}")
+    public ResponseEntity<Product> getProductForFeign(@PathVariable Long id) {
+        return productRepository.findById(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
     @PostMapping
     public ResponseEntity<Product> createProduct(@RequestBody Product product) {
         return new ResponseEntity<>(productService.createProduct(product), HttpStatus.CREATED);

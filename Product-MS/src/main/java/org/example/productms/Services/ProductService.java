@@ -66,4 +66,15 @@ public class ProductService {
                 .filter(b -> b != null && !b.isBlank())
                 .toList();
     }
+    public void decreaseStock(Long productId, int quantity) {
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new RuntimeException("Product not found: " + productId));
+        if (product.getStockQuantity() < quantity) {
+            throw new RuntimeException("Stock insuffisant pour: " + product.getName());
+        }
+        product.setStockQuantity(product.getStockQuantity() - quantity);
+        productRepository.save(product);
+        System.out.println("✅ Stock updated: " + product.getName()
+                + " → " + product.getStockQuantity() + " remaining");
+    }
 }

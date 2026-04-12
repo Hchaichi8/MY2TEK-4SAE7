@@ -21,6 +21,7 @@
           <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/unknown/lombok-unknown.jar" />
         </processorPath>
         <module name="MS_CompetenceAndReview" />
+        <module name="MS_Commandes" />
       </profile>
       <profile name="Annotation profile for ShippingMicroService" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
@@ -31,7 +32,6 @@
         </processorPath>
         <module name="ShippingMicroService" />
         <module name="Product-MS" />
-        <module name="MS_Commandes" />
       </profile>
     </annotationProcessing>
   </component>

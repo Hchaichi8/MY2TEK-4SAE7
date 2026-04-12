@@ -6,6 +6,7 @@ import org.example.usermicroservice.Config.RabbitMQConfig;
 import org.example.usermicroservice.DTO.UserDTO;
 import org.example.usermicroservice.DTO.UserSyncRequest;
 import org.example.usermicroservice.OpenFeign.ReviewClient;
+import org.example.usermicroservice.Services.KeycloakAdminService;
 import org.example.usermicroservice.Services.UserService;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +26,7 @@ public class UserController {
 
     private final UserService userService;
     private final ObjectMapper objectMapper = new ObjectMapper();
+    private final KeycloakAdminService keycloakAdminService;
 
     @Autowired
     private RabbitTemplate rabbitTemplate;
@@ -47,17 +49,34 @@ public class UserController {
         );
         return ResponseEntity.ok(userService.syncUser(req));
     }
-    @GetMapping("/me/reviews")
-    public ResponseEntity<Map<String, Object>> getMyReviews(
-            @AuthenticationPrincipal Jwt jwt) {
+    // Get my own profile from token — auto-sync if first time (Google login, etc.)
+    @GetMapping("/me")
+    public ResponseEntity<UserDTO> getMe(@AuthenticationPrincipal Jwt jwt) {
+        UserSyncRequest req = new UserSyncRequest(
+                jwt.getSubject(),
+                jwt.getClaimAsString("given_name"),
+                jwt.getClaimAsString("family_name"),
+                jwt.getClaimAsString("email")
+        );
+        return ResponseEntity.ok(userService.syncUser(req));
+    }
 
+    @GetMapping("/me/reviews")
+    public ResponseEntity<Map<String, Object>> getMyReviews(@AuthenticationPrincipal Jwt jwt) {
         String keycloakId = jwt.getSubject();
-        UserDTO user = userService.getUserByKeycloakId(keycloakId);
+
+        // Auto-sync here too
+        UserSyncRequest req = new UserSyncRequest(
+                keycloakId,
+                jwt.getClaimAsString("given_name"),
+                jwt.getClaimAsString("family_name"),
+                jwt.getClaimAsString("email")
+        );
+        UserDTO user = userService.syncUser(req);
 
         Map<String, Object> result = new HashMap<>();
         result.put("user", user);
 
-        // ✅ OpenFeign call to ReviewMicroservice
         try {
             String reviewsJson = reviewClient.getReviewsByClient(keycloakId);
             Object reviews = objectMapper.readValue(reviewsJson, Object.class);
@@ -69,12 +88,6 @@ public class UserController {
         }
 
         return ResponseEntity.ok(result);
-    }
-
-    // Get my own profile from token
-    @GetMapping("/me")
-    public ResponseEntity<UserDTO> getMe(@AuthenticationPrincipal Jwt jwt) {
-        return ResponseEntity.ok(userService.getUserByKeycloakId(jwt.getSubject()));
     }
 
     // Update my profile
@@ -115,5 +128,18 @@ public class UserController {
     public ResponseEntity<Void> delete(@PathVariable String keycloakId) {
         userService.deleteUser(keycloakId);
         return ResponseEntity.noContent().build();
+    }
+
+    // Admin update any user
+    @PutMapping("/{keycloakId}")
+    public ResponseEntity<UserDTO> updateByAdmin(
+            @PathVariable String keycloakId,
+            @RequestBody UserDTO dto) {
+        return ResponseEntity.ok(userService.updateUser(keycloakId, dto));
+    }
+
+    @GetMapping("/keycloak/all")
+    public ResponseEntity<List<Map<String, Object>>> getAllFromKeycloak() {
+        return ResponseEntity.ok(keycloakAdminService.getAllUsersFromKeycloak());
     }
 }

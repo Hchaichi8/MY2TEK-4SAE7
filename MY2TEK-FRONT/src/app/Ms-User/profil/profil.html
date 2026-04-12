@@ -47,7 +47,9 @@
         </a>
         <a class="p-nav-item" routerLink="/mes-commandes"><i class="fas fa-box"></i> Mes Commandes</a>
         <a class="p-nav-item"><i class="fas fa-map-marker-alt"></i> Mes Adresses</a>
-        <a class="p-nav-item"><i class="fas fa-shield-alt"></i> Sécurité</a>
+         <a class="p-nav-item" [class.active]="activeTab === 'shipments'" (click)="setTab('shipments')">
+          <i class="fas fa-truck"></i> Mes Livraisons
+        </a>
         <hr>
         <button class="btn-logout" (click)="onLogout()">Déconnexion</button>
       </aside>
@@ -100,7 +102,7 @@
           </div>
         </div>
 
-        <!-- ✅ REVIEWS TAB -->
+        
        <!-- ✅ REVIEWS TAB -->
 <div *ngIf="activeTab === 'reviews'">
   <div class="content-card">
@@ -154,6 +156,63 @@
     </div>
   </div>
 </div>
+<!-- SHIPMENTS TAB -->
+        <div *ngIf="activeTab === 'shipments'">
+          <div class="content-card">
+            <div class="card-header">
+              <div class="user-identity">
+                <h2 class="full-name">Mes Livraisons</h2>
+                <p class="user-email-sub">Suivez et gérez vos expéditions MY2TEK.</p>
+              </div>
+              <button class="edit-link" (click)="openShipmentModal()">
+                <i class="fas fa-plus"></i> Nouvelle livraison
+              </button>
+            </div>
+            <div class="loading-row" *ngIf="shipmentsLoading">
+              <span class="mini-loader"></span> Chargement...
+            </div>
+            <div class="alert-danger-sm" *ngIf="shipmentsError">{{ shipmentsError }}</div>
+            <div class="empty-shipments" *ngIf="!shipmentsLoading && myShipments.length === 0">
+              <i class="fas fa-box-open"></i>
+              <p>Aucune livraison pour le moment.</p>
+              <button class="btn-new-ship" (click)="openShipmentModal()">Créer ma première livraison</button>
+            </div>
+            <div class="shipment-list" *ngIf="!shipmentsLoading && myShipments.length > 0">
+              <div class="shipment-row" *ngFor="let s of myShipments">
+                <div class="ship-icon"><i class="fas fa-truck"></i></div>
+                <div class="ship-info">
+                  <span class="ship-tracking">{{ s.trackingNumber }}</span>
+                  <span class="ship-dest"><i class="fas fa-map-marker-alt"></i> {{ s.destination }}</span>
+                  <span class="ship-date">{{ s.createdAt | date:'dd MMM yyyy' }}</span>
+                </div>
+                <div class="ship-middle">
+                  <span class="ship-carrier">{{ s.carrier?.name }}</span>
+                  <span class="ship-cost">{{ s.shippingCost | number:'1.2-2' }} TND</span>
+                </div>
+                <div class="ship-status">
+                  <span class="status-pill"
+                    [style.background]="getStatusColor(s.status) + '20'"
+                    [style.color]="getStatusColor(s.status)">
+                    {{ getStatusLabel(s.status) }}
+                  </span>
+                </div>
+                <div class="ship-actions">
+                  <button class="btn-track-sm" (click)="openTrack(s.trackingNumber)">
+                    <i class="fas fa-search-location"></i> Suivre
+                  </button>
+                  <button class="btn-edit-sm" *ngIf="s.status === 'READY_TO_SHIP'" (click)="openEditShip(s)">
+                    <i class="fas fa-edit"></i>
+                  </button>
+                  <button class="btn-cancel-sm" *ngIf="s.status === 'READY_TO_SHIP'" (click)="cancelShipment(s)">
+                    <i class="fas fa-times"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+  
 
 <!-- ✅ Edit Review Modal -->
 <div class="modal-overlay" *ngIf="isReviewModalOpen" (click)="closeReviewModal()">
