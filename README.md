@@ -92,7 +92,7 @@ commandes.queue — commande livrée
 commandes.cancelled.queue — commande annulée
 Sécurité JWT Keycloak : DELETE réservé au rôle admin
 
-##Structure du projet
+## Structure du projet
 
 ├── apigetway/              # API Gateway (Spring Cloud Gateway)
 ├── config-server/          # Config Server (native, classpath:/configs/)
