@@ -1,0 +1,147 @@
+<div class="home-container">
+  <nav class="home-nav">
+    <div class="logo">MY2<span>TEK</span></div>
+
+    <div class="nav-links">
+      <a href="#">PC Gamer</a>
+      <a href="#">Composants</a>
+      <a href="#">Périphériques</a>
+    </div>
+
+    <div class="nav-icons">
+      <i class="fa-solid fa-magnifying-glass"></i>
+      <i class="fa-solid fa-cart-shopping"></i>
+
+      <!-- Loading skeleton -->
+      <div *ngIf="isLoggedIn === null" class="nav-skeleton"></div>
+
+      <!-- Guest -->
+      <div *ngIf="isLoggedIn === false" class="user-pill" (click)="onLogin()">
+        Connexion
+      </div>
+
+      <!-- Logged in -->
+      <div *ngIf="isLoggedIn === true" class="user-menu">
+        <div class="user-pill-logged" (click)="goToProfile()">
+          <div class="user-avatar">{{ userInitials }}</div>
+          <span class="user-name">
+            {{ userData?.firstName || userData?.username }}
+          </span>
+          <i class="fa-solid fa-chevron-down" style="font-size: 10px; opacity: 0.6;"></i>
+        </div>
+
+        <div class="user-dropdown">
+          <div class="dropdown-header">
+            <div class="dropdown-avatar">{{ userInitials }}</div>
+            <div class="dropdown-info">
+              <span class="dropdown-name">
+                {{ userData?.firstName }} {{ userData?.lastName }}
+              </span>
+              <span class="dropdown-email">{{ userData?.email }}</span>
+            </div>
+          </div>
+          <hr class="dropdown-divider">
+          <div class="dropdown-item" (click)="goToProfile()">
+            <i class="fa-solid fa-user"></i> Mon Profil
+          </div>
+          <div class="dropdown-item" routerLink="/orders">
+            <i class="fa-solid fa-box"></i> Mes Commandes
+          </div>
+          <div class="dropdown-item" routerLink="/settings">
+            <i class="fa-solid fa-gear"></i> Paramètres
+          </div>
+          <hr class="dropdown-divider">
+          <div class="dropdown-item logout" (click)="onLogout()">
+            <i class="fa-solid fa-right-from-bracket"></i> Déconnexion
+          </div>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <section class="hero">
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+      <span class="badge-new animate-pop">🔥 Nouveauté 2026</span>
+
+      <!-- Loading state — show generic title -->
+      <h1 *ngIf="isLoggedIn === null">
+        L'Excellence Hardware <br><span>MY2TEK</span>
+      </h1>
+      <!-- Personalized greeting -->
+      <h1 *ngIf="isLoggedIn === true">
+        Bonjour, <span>{{ userData?.firstName || userData?.username }}</span> 👋
+      </h1>
+      <!-- Guest -->
+      <h1 *ngIf="isLoggedIn === false">
+        L'Excellence Hardware <br><span>MY2TEK</span>
+      </h1>
+
+      <p>Équipez-vous avec le summum de la technologie. Performances extrêmes pour les Gamers et Créateurs exigeants.</p>
+      <div class="hero-btns">
+        <button class="btn-primary">Découvrir le Setup</button>
+        <button class="btn-outline">Promotions Flash</button>
+      </div>
+    </div>
+    <div class="hero-image">
+      <img src="https://dlcdnwebimgs.asus.com/gain/2740A395-B357-4C75-8D63-B8B9B1E627B5/w717/h525" alt="GPU RTX">
+    </div>
+  </section>
+
+  <section class="categories">
+    <div class="cat-item"><i class="fa-solid fa-microchip"></i> <span>Processeurs</span></div>
+    <div class="cat-item active"><i class="fa-solid fa-memory"></i> <span>Cartes Graphiques</span></div>
+    <div class="cat-item"><i class="fa-solid fa-hard-drive"></i> <span>Stockage</span></div>
+    <div class="cat-item"><i class="fa-solid fa-keyboard"></i> <span>Claviers</span></div>
+  </section>
+
+  <section class="products-section">
+  <div class="section-header">
+    <div class="title-group">
+      <h2>Produits Vedettes</h2>
+      <div class="underline"></div>
+    </div>
+    <a href="#" class="view-all">Tout explorer <i class="fa-solid fa-arrow-right"></i></a>
+  </div>
+
+  <!-- Loading skeleton -->
+  <div class="product-grid" *ngIf="isLoadingProducts">
+    <div class="product-card skeleton-card" *ngFor="let i of [1,2,3]">
+      <div class="product-img skeleton-img"></div>
+      <div class="product-info">
+        <div class="skeleton-line short"></div>
+        <div class="skeleton-line"></div>
+        <div class="skeleton-line short"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Real products -->
+  <div class="product-grid" *ngIf="!isLoadingProducts">
+
+    <div *ngIf="products.length === 0" class="empty-products">
+      Aucun produit disponible pour le moment.
+    </div>
+
+    <div class="product-card" *ngFor="let p of products" (click)="goToDetail(p.id)">
+      <div class="product-img">
+        <img [src]="p.imageUrl || 'https://via.placeholder.com/300x200?text=No+Image'" [alt]="p.name">
+        <span class="tag" *ngIf="p.stockQuantity > 0">En stock</span>
+        <span class="tag red" *ngIf="p.stockQuantity === 0">Rupture</span>
+      </div>
+      <div class="product-info">
+        <span class="category-name">{{ p.brand }}</span>
+        <h3>{{ p.name }}</h3>
+        <p class="product-desc">{{ p.description | slice:0:60 }}...</p>
+        <div class="card-footer">
+          <p class="price">{{ p.price | number:'1.2-2' }} <span>TND</span></p>
+          <button class="add-to-cart" (click)="$event.stopPropagation()">
+            <i class="fa-solid fa-plus"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+</div>

@@ -1,0 +1,83 @@
+<div class="auth-full-page">
+  <div class="auth-split-wrapper">
+    <div class="auth-form-side">
+      <div class="auth-card">
+        <div class="auth-header">
+          <h1 class="logo">MY2<span>TEK</span></h1>
+          <p>Modifier le produit <strong>#PRD-{{ productId }}</strong></p>
+        </div>
+
+        <div *ngIf="errorMessage" class="alert alert-danger fade-in">
+          <i class="fas fa-exclamation-circle"></i> {{ errorMessage }}
+        </div>
+        <div *ngIf="successMessage" class="alert alert-success fade-in">
+          <i class="fas fa-check-circle"></i> {{ successMessage }}
+        </div>
+
+        <form class="auth-form" (ngSubmit)="onSubmit()">
+          <div class="row">
+            <div class="input-group">
+              <label>Nom du produit</label>
+              <input type="text" name="name" [(ngModel)]="productData.name" required>
+            </div>
+            <div class="input-group">
+              <label>Marque</label>
+              <input type="text" name="brand" [(ngModel)]="productData.brand" required>
+            </div>
+          </div>
+
+          <div class="input-group">
+            <label>Description</label>
+            <textarea name="description" [(ngModel)]="productData.description" rows="3"></textarea>
+          </div>
+
+          <div class="row">
+            <div class="input-group">
+              <label>Prix (€)</label>
+              <input type="number" name="price" [(ngModel)]="productData.price" required min="0" step="0.01">
+            </div>
+            <div class="input-group">
+              <label>Quantité en stock</label>
+              <input type="number" name="stockQuantity" [(ngModel)]="productData.stockQuantity" required min="0">
+            </div>
+          </div>
+
+          <div class="input-group">
+            <label>Catégorie</label>
+            <input type="text" name="category" [(ngModel)]="productData.category" required>
+          </div>
+
+          <div class="input-group">
+            <label>Image du produit</label>
+            <div *ngIf="productData.imageUrl" class="image-preview">
+              <img [src]="productData.imageUrl" alt="Image actuelle">
+              <span class="current-label">Image actuelle</span>
+            </div>
+            <div class="file-upload-wrapper">
+              <label class="file-upload-label" for="imageFile">
+                <i class="fas fa-cloud-upload-alt"></i>
+                <span>Remplacer l'image (PNG, JPG...)</span>
+              </label>
+              <input id="imageFile" type="file" accept="image/*" (change)="onFileSelected($event)" class="file-input">
+            </div>
+          </div>
+
+          <div class="form-actions-row">
+            <button type="button" class="btn-secondary" (click)="onCancel()">Annuler</button>
+            <button type="submit" class="btn-primary" [disabled]="isLoading">
+              <span *ngIf="!isLoading">Enregistrer les modifications</span>
+              <span *ngIf="isLoading" class="loader"></span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="auth-image-side product-bg">
+      <div class="image-overlay-text">
+        <h2>Modifier le produit.</h2>
+        <p>Gardez votre catalogue à jour.</p>
+      </div>
+    </div>
+  </div>
+</div>

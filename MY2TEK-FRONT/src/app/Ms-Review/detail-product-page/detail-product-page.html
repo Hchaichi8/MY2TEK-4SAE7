@@ -1,0 +1,187 @@
+<div class="page-wrapper">
+  <nav class="shared-nav">
+    <div class="logo" routerLink="/home">MY2<span>TEK</span></div>
+    <div class="nav-links">
+      <a routerLink="/home">PC Gamer</a>
+      <a routerLink="/home">Composants</a>
+      <a routerLink="/home">Périphériques</a>
+    </div>
+    <div class="nav-icons">
+      <i class="fa-solid fa-magnifying-glass"></i>
+      <div class="cart-wrapper" (click)="goToPanier()" style="cursor:pointer; position:relative;">
+  <i class="fa-solid fa-cart-shopping"></i>
+  <span class="cart-badge" *ngIf="cartCount > 0">{{ cartCount }}</span>
+</div>
+      <div *ngIf="isLoggedIn === null" class="nav-skeleton"></div>
+      <div *ngIf="isLoggedIn === false" class="user-pill" routerLink="/login">Connexion</div>
+      <div *ngIf="isLoggedIn === true" class="user-menu">
+        <div class="user-pill-logged" routerLink="/Profil">
+          <div class="user-avatar-nav">{{ userInitials }}</div>
+          <span class="user-name">{{ userData?.firstName || userData?.username }}</span>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Loading state -->
+  <div *ngIf="isLoadingProduct" class="detail-container loading-state">
+    <p>Chargement du produit...</p>
+  </div>
+
+  <!-- Product not found -->
+  <div *ngIf="!isLoadingProduct && !product" class="detail-container loading-state">
+    <p>Produit introuvable.</p>
+    <button class="btn-add-cart" routerLink="/home">← Retour</button>
+  </div>
+
+  <!-- Real product -->
+  <div class="detail-container" *ngIf="!isLoadingProduct && product">
+    <div class="product-main-grid">
+
+      <div class="product-gallery">
+        <div class="main-image-card">
+          <span class="stock-badge" [class.out]="product.stockQuantity === 0">
+            {{ product.stockQuantity > 0 ? 'En Stock' : 'Rupture de stock' }}
+          </span>
+          <img [src]="product.imageUrl || 'https://via.placeholder.com/500x400?text=No+Image'"
+               [alt]="product.name">
+        </div>
+      </div>
+
+      <div class="product-info-panel">
+        <nav class="breadcrumb">
+          Accueil > {{ product.category }} > {{ product.brand }}
+        </nav>
+        <h1 class="product-title">{{ product.name }}</h1>
+
+        <div class="quick-meta">
+          <span class="sku">REF: PRD-{{ product.id }}</span>
+          <span class="sku">Marque: {{ product.brand }}</span>
+        </div>
+
+        <div class="price-section">
+          <span class="current-price">{{ product.price | number:'1.2-2' }} TND</span>
+        </div>
+
+        <p class="product-short-desc">{{ product.description }}</p>
+
+        <div class="purchase-zone">
+  <div class="qty-selector">
+    <button (click)="decrementQty()">-</button>
+    <input type="text" [value]="quantity" readonly>
+    <button (click)="incrementQty()">+</button>
+  </div>
+  <button class="btn-add-cart"
+          [disabled]="product.stockQuantity === 0 || addedToCart"
+          (click)="ajouterAuPanier()">
+    <i class="fa-solid" [class.fa-cart-shopping]="!addedToCart" [class.fa-check]="addedToCart"></i>
+    {{ addedToCart ? 'Ajouté !' : product.stockQuantity > 0 ? 'Ajouter au panier' : 'Indisponible' }}
+  </button>
+</div>
+
+        <div class="trust-badges">
+          <div class="badge"><i class="fa-solid fa-truck-fast"></i> Livraison 24/48h</div>
+          <div class="badge"><i class="fa-solid fa-shield-halved"></i> Garantie 2 ans</div>
+        </div>
+      </div>
+    </div>
+
+    <hr class="divider">
+
+    <section class="reviews-module">
+      <div class="reviews-header">
+        <div class="header-text">
+          <h2>Avis des Clients</h2>
+          <p>Ce que nos utilisateurs pensent de ce produit.</p>
+        </div>
+
+        <!-- ✅ Hide button while loading -->
+        <button *ngIf="isLoggedIn !== null" class="btn-write" (click)="toggleReviewForm()">
+          <i class="fa-solid"
+             [class.fa-pen-to-square]="!showForm && isLoggedIn"
+             [class.fa-xmark]="showForm"
+             [class.fa-lock]="!isLoggedIn"></i>
+          {{ showForm ? 'Annuler' : isLoggedIn ? 'Laisser un avis' : 'Connectez-vous pour écrire' }}
+        </button>
+      </div>
+
+      <!-- ✅ Author info banner above form -->
+      <div *ngIf="showForm && isLoggedIn" class="review-author-info">
+        <div class="author-avatar">{{ userInitials }}</div>
+        <div>
+          <span class="author-name">{{ userDisplayName }}</span>
+          <span class="author-label">Vous publiez en tant que client vérifié</span>
+        </div>
+      </div>
+
+      <!-- ✅ Form only shown when showForm AND logged in AND not submitting -->
+      <div class="review-form-card" *ngIf="showForm && isLoggedIn">
+        <h3>Partagez votre expérience</h3>
+
+        <div class="rating-input">
+          <div class="stars-picker">
+            <i *ngFor="let star of [1,2,3,4,5]"
+               class="fa-star"
+               [class.fa-solid]="newReview.rating >= star"
+               [class.fa-regular]="newReview.rating < star"
+               (click)="newReview.rating = star"
+               style="cursor:pointer; font-size: 24px; color: #f59e0b;"></i>
+          </div>
+        </div>
+
+        <div class="textarea-wrapper">
+          <textarea
+            [(ngModel)]="newReview.description"
+            placeholder="Votre avis nous intéresse..."
+            rows="4">
+          </textarea>
+          <button class="btn-ai" (click)="enhanceWithAI()" [disabled]="isEnhancing">
+            <i class="fa-solid fa-wand-magic-sparkles"></i>
+            {{ isEnhancing ? 'IA en cours...' : "Améliorer avec l'IA" }}
+          </button>
+        </div>
+
+        <!-- ✅ isSubmitting disables button to prevent double click -->
+        <button class="btn-submit" (click)="submitReview()" [disabled]="isSubmitting">
+          <span *ngIf="!isSubmitting">Publier l'avis</span>
+          <span *ngIf="isSubmitting">Publication...</span>
+        </button>
+      </div>
+
+      <div class="reviews-list">
+        <div class="review-item" *ngFor="let r of reviews">
+          <div class="review-card-inner">
+            <!-- ✅ Show first letter of clientName if available -->
+            <div class="user-avatar">
+              {{ (r.clientName || r.clientId)?.charAt(0)?.toUpperCase() || 'U' }}
+            </div>
+            <div class="review-body">
+              <div class="review-meta">
+                <div class="user-info">
+                  <!-- ✅ Show real name instead of raw ID -->
+                  <span class="username">
+                    {{ r.clientName || ('Client #' + r.clientId) }}
+                  </span>
+                  <span class="verified">
+                    <i class="fa-solid fa-circle-check"></i> Achat vérifié
+                  </span>
+                </div>
+                <span class="date">{{ r.createdAt | date:'dd MMM yyyy' }}</span>
+              </div>
+              <div class="stars">
+                <i class="fa-solid fa-star" *ngFor="let s of getStars(r.rating)"></i>
+                <i class="fa-regular fa-star" *ngFor="let s of [].constructor(5 - r.rating)"></i>
+              </div>
+              <p class="review-text">"{{ r.description }}"</p>
+            </div>
+          </div>
+        </div>
+
+        <div *ngIf="reviews.length === 0" class="no-reviews">
+          <i class="fa-regular fa-comment-dots" style="font-size: 32px; opacity: 0.3;"></i>
+          <p>Aucun avis pour le moment. Soyez le premier !</p>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>

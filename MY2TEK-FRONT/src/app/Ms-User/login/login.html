@@ -1,0 +1,71 @@
+<div class="auth-full-page">
+  <div class="auth-split-wrapper">
+    <div class="auth-form-side">
+      <div class="auth-card">
+        <div class="auth-header">
+          <h1 class="logo">MY2<span>TEK</span></h1>
+          <p>Bienvenue sur notre plateforme sécurisée</p>
+        </div>
+
+        <div class="tab-group">
+          <button class="tab-btn active">Connexion</button>
+          <button class="tab-btn" routerLink="/Register">Inscription</button>
+        </div>
+
+        <div *ngIf="errorMessage" class="alert alert-danger fade-in">
+          <i class="fas fa-exclamation-circle"></i> {{ errorMessage }}
+        </div>
+        
+        <div *ngIf="successMessage" class="alert alert-success fade-in">
+          <i class="fas fa-check-circle"></i> {{ successMessage }}
+        </div>
+
+        <form class="auth-form" (ngSubmit)="onLogin()">
+          <div class="input-group">
+            <label>Email / Username</label>
+            <input type="text" name="email" [(ngModel)]="loginData.email" required placeholder="votre@email.com">
+          </div>
+          
+          <div class="input-group">
+            <label>Mot de passe</label>
+            <input type="password" name="password" [(ngModel)]="loginData.password" required placeholder="••••••••">
+          </div>
+          <!-- Add below the password input -->
+<div class="forgot-link">
+  <span routerLink="/forgot-password" class="link">
+    Mot de passe oublié ?
+  </span>
+</div>
+
+          <button type="submit" class="btn-primary" [disabled]="isLoading">
+            <span *ngIf="!isLoading">Accéder au portail MY2TEK</span>
+            <span *ngIf="isLoading" class="loader"></span>
+          </button>
+        </form>
+
+        <div class="divider">
+          <span>OU</span>
+        </div>
+
+        <div class="google-btn-container">
+          <button type="button" class="btn-secondary" (click)="loginWithGoogle()" 
+                  style="width: 100%; padding: 12px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; border: 1px solid #ddd; background: white;">
+            <img src="https://fonts.gstatic.com/s/i/productlogos/googleg/v6/24px.svg" width="20px">
+            Continuer avec Google
+          </button>
+        </div>
+        
+        <div class="auth-footer">
+          <p>La sécurité est gérée par <strong>Keycloak & Google</strong></p>
+        </div>
+      </div>
+    </div>
+
+    <div class="auth-image-side login-bg">
+      <div class="image-overlay-text">
+        <h2>Boostez votre setup.</h2>
+        <p>Les meilleures offres High-Tech sont ici.</p>
+      </div>
+    </div>
+  </div>
+</div>

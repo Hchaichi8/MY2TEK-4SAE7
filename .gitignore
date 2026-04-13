@@ -1,0 +1,22 @@
+# Build outputs
+**/target/
+**/node_modules/
+**/.angular/
+**/dist/
+**/.next/
+**/build/
+
+# IDE
+.idea/
+.vscode/
+
+# Data / DB files
+data/
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs
+*.log

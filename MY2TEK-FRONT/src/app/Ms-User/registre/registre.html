@@ -1,0 +1,71 @@
+<div class="auth-full-page">
+  <div class="auth-split-wrapper">
+    <div class="auth-form-side">
+      <div class="auth-card">
+        <div class="auth-header">
+          <h1 class="logo">MY2<span>TEK</span></h1>
+          <p>Rejoignez la communauté Tech</p>
+        </div>
+
+        <div class="tab-group">
+          <button class="tab-btn" routerLink="/login">Connexion</button>
+          <button class="tab-btn active">Inscription</button>
+        </div>
+
+        <div *ngIf="errorMessage" class="alert alert-danger fade-in">
+          <i class="fas fa-exclamation-circle"></i> {{ errorMessage }}
+        </div>
+        <div *ngIf="successMessage" class="alert alert-success fade-in">
+          <i class="fas fa-check-circle"></i> {{ successMessage }}
+        </div>
+
+        <form class="auth-form" (ngSubmit)="onRegister()">
+          <div class="input-group">
+            <label>Username</label>
+            <input type="text" name="username" [(ngModel)]="regData.username" required placeholder="Votre pseudo">
+          </div>
+
+          <div class="input-group">
+            <label>Prénom</label>
+            <input type="text" name="firstName" [(ngModel)]="regData.firstName" required placeholder="Prénom">
+          </div>
+
+          <div class="input-group">
+            <label>Nom</label>
+            <input type="text" name="lastName" [(ngModel)]="regData.lastName" required placeholder="Nom">
+          </div>
+
+          <div class="input-group">
+            <label>Email</label>
+            <input type="email" name="email" [(ngModel)]="regData.email" required placeholder="votre@email.com">
+          </div>
+          
+          <div class="input-group">
+            <label>Mot de passe</label>
+            <input type="password" name="password" [(ngModel)]="regData.password" required placeholder="••••••••">
+          </div>
+          <div class="input-group">
+  <label>Confirmer le mot de passe</label>
+  <input type="password" name="confirmPassword" [(ngModel)]="regData.confirmPassword" required placeholder="••••••••">
+</div>
+
+          <button type="submit" class="btn-primary" [disabled]="isLoading">
+            <span *ngIf="!isLoading">Créer mon compte</span>
+            <span *ngIf="isLoading" class="loader"></span>
+          </button>
+        </form>
+
+        <div class="auth-footer">
+          <p>Déjà inscrit ? <span routerLink="/login" class="link">Se connecter</span></p>
+        </div>
+      </div>
+    </div>
+
+    <div class="auth-image-side register-bg">
+      <div class="image-overlay-text">
+        <h2>Bienvenue chez MY2TEK</h2>
+        <p>Accédez à des prix exclusifs sur tout l'électroménager.</p>
+      </div>
+    </div>
+  </div>
+</div>
